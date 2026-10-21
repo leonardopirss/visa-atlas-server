@@ -29,10 +29,7 @@ describe('public API contract: defaults, countries and map', () => {
   });
 
   it('loads the shared OpenAPI document and keeps exactly five operations', async () => {
-    const source = await readFile(
-      '../visa-atlas-spec-kit/specs/001-shared-api-contract/contracts/openapi.yaml',
-      'utf8',
-    );
+    const source = await readFile('contracts/openapi.yaml', 'utf8');
     const document = parse(source) as { paths?: Record<string, unknown> };
     expect(Object.keys(document.paths ?? {})).toEqual([
       '/filters/defaults',

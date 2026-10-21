@@ -1,0 +1,232 @@
+openapi: 3.1.0
+info:
+  title: Visa Atlas Public API
+  version: 1.0.0
+  description: >-
+    Contrato PROPOSTO para MVP BRA/WORK. O campo metricType discrimina métricas migratórias.
+    FIRST_RESIDENCE_PERMITS_GRANTED não significa WORK_VISAS_ISSUED.
+servers:
+  - url: /api/v1
+paths:
+  /filters/defaults:
+    get:
+      operationId: getFilterDefaults
+      tags: [Filters]
+      summary: Filtros e ano comum de releases publicados
+      responses:
+        '200':
+          description: Padrões conhecidos; year pode ser null se ainda não existem releases equivalentes
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FilterDefaults' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /countries:
+    get:
+      operationId: listCountries
+      tags: [Countries]
+      summary: Catálogo com busca e paginação
+      parameters:
+        - { name: search, in: query, required: false, schema: { type: string, maxLength: 100 } }
+        - { name: page, in: query, required: false, schema: { type: integer, minimum: 1, default: 1 } }
+        - { name: pageSize, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 100, default: 30 } }
+      responses:
+        '200':
+          description: Catálogo paginado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CountriesResponse' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+  /stats/map:
+    get:
+      operationId: getMapStatistics
+      tags: [Statistics]
+      summary: Disponibilidade e indicadores para todos os países no mesmo payload
+      parameters:
+        - { $ref: '#/components/parameters/Citizenship' }
+        - { $ref: '#/components/parameters/Purpose' }
+        - { $ref: '#/components/parameters/YearOptional' }
+        - { $ref: '#/components/parameters/MetricType' }
+        - { $ref: '#/components/parameters/ComparisonGroupId' }
+      responses:
+        '200':
+          description: Observações temáticas, inclusive países com dados ausentes
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MapStatisticsResponse' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+  /countries/{iso3}:
+    get:
+      operationId: getCountryDetail
+      tags: [Countries]
+      summary: Detalhe agregado do país (estatística, categorias, programas, fontes)
+      parameters:
+        - { $ref: '#/components/parameters/Iso3' }
+        - { $ref: '#/components/parameters/Citizenship' }
+        - { $ref: '#/components/parameters/Purpose' }
+        - { $ref: '#/components/parameters/YearOptional' }
+        - { $ref: '#/components/parameters/MetricType' }
+        - { $ref: '#/components/parameters/ComparisonGroupId' }
+      responses:
+        '200':
+          description: Detalhe, mesmo sem estatística disponível
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CountryDetail' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+  /countries/{iso3}/timeseries:
+    get:
+      operationId: getCountryTimeseries
+      tags: [Statistics]
+      summary: Série histórica publicada para o mesmo recorte e grupo
+      parameters:
+        - { $ref: '#/components/parameters/Iso3' }
+        - { $ref: '#/components/parameters/Citizenship' }
+        - { $ref: '#/components/parameters/Purpose' }
+        - { $ref: '#/components/parameters/MetricType' }
+        - { $ref: '#/components/parameters/ComparisonGroupId' }
+        - { name: fromYear, in: query, required: false, schema: { type: integer, minimum: 1900 } }
+        - { name: toYear, in: query, required: false, schema: { type: integer, minimum: 1900 } }
+      responses:
+        '200':
+          description: Pontos ordenados por ano
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TimeseriesResponse' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+components:
+  parameters:
+    Iso3: { name: iso3, in: path, required: true, schema: { $ref: '#/components/schemas/Iso3' } }
+    Citizenship: { name: citizenship, in: query, required: false, schema: { $ref: '#/components/schemas/Iso3', default: BRA } }
+    Purpose: { name: purpose, in: query, required: false, schema: { type: string, enum: [WORK], default: WORK } }
+    YearOptional: { name: year, in: query, required: false, description: Na ausência, selecionar último ano comum validado, schema: { type: integer, minimum: 1900 } }
+    MetricType: { name: metricType, in: query, required: false, schema: { $ref: '#/components/schemas/MetricType' } }
+    ComparisonGroupId: { name: comparisonGroupId, in: query, required: false, schema: { type: string, minLength: 1 } }
+  responses:
+    BadRequest: { description: Parâmetros inválidos, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+    NotFound: { description: País inexistente, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+    Unprocessable: { description: Dimensões incompatíveis ou não comparáveis, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+    Unavailable: { description: Serviço de estatísticas indisponível, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+  schemas:
+    Iso3: { type: string, pattern: '^[A-Z]{3}$', example: ESP }
+    MetricType:
+      type: string
+      enum: [FIRST_RESIDENCE_PERMITS_GRANTED, WORK_VISAS_ISSUED, APPLICATIONS_RECEIVED, APPLICATIONS_REFUSED, DECISIONS_GRANTED, VALID_PERMIT_HOLDERS]
+    DataStatus: { type: string, enum: [AVAILABLE, UNAVAILABLE, SUPPRESSED, ESTIMATED, REVISED] }
+    Freshness: { type: string, enum: [CURRENT, STALE] }
+    SourceRef:
+      type: object
+      required: [organization, datasetCode, url]
+      properties:
+        organization: { type: string }
+        datasetCode: { type: string }
+        releaseId: { type: [string, 'null'] }
+        url: { type: string, format: uri }
+        methodologyUrl: { type: [string, 'null'], format: uri }
+        fetchedAt: { type: [string, 'null'], format: date-time }
+        publishedAt: { type: [string, 'null'], format: date-time }
+    Country:
+      type: object
+      required: [iso3, iso2, name, region]
+      properties:
+        iso3: { $ref: '#/components/schemas/Iso3' }
+        iso2: { type: string, pattern: '^[A-Z]{2}$' }
+        name: { type: string }
+        region: { type: string }
+    FilterDefaults:
+      type: object
+      required: [citizenship, purpose, year, metricType, comparisonGroupId]
+      properties:
+        citizenship: { $ref: '#/components/schemas/Iso3' }
+        purpose: { type: string, enum: [WORK] }
+        year: { type: [integer, 'null'] }
+        metricType: { $ref: '#/components/schemas/MetricType' }
+        comparisonGroupId: { type: [string, 'null'] }
+        dataAvailable: { type: boolean }
+    CountriesResponse:
+      type: object
+      required: [data, page, pageSize, total]
+      properties:
+        data: { type: array, items: { $ref: '#/components/schemas/Country' } }
+        page: { type: integer }
+        pageSize: { type: integer }
+        total: { type: integer }
+    Statistic:
+      type: object
+      required: [metricType, value, dataStatus, freshness, unit, period, comparisonGroupId, source]
+      properties:
+        metricType: { $ref: '#/components/schemas/MetricType' }
+        value: { type: [integer, 'null'], minimum: 0, description: 'null indica dado indisponível/suprimido, nunca zero presumido' }
+        dataStatus: { $ref: '#/components/schemas/DataStatus' }
+        freshness: { $ref: '#/components/schemas/Freshness' }
+        unit: { type: string }
+        period: { type: string, description: 'Exemplo: 2025; usar período efetivo da fonte' }
+        comparisonGroupId: { type: [string, 'null'] }
+        source: { oneOf: [{ $ref: '#/components/schemas/SourceRef' }, { type: 'null' }] }
+    MapCountry:
+      type: object
+      required: [iso3, statistic]
+      properties:
+        iso3: { $ref: '#/components/schemas/Iso3' }
+        statistic: { $ref: '#/components/schemas/Statistic' }
+    MapStatisticsResponse:
+      type: object
+      required: [citizenship, purpose, year, countries]
+      properties:
+        citizenship: { $ref: '#/components/schemas/Iso3' }
+        purpose: { type: string, enum: [WORK] }
+        year: { type: [integer, 'null'] }
+        countries: { type: array, items: { $ref: '#/components/schemas/MapCountry' } }
+        legendLabel: { type: string }
+    VisaProgram:
+      type: object
+      required: [id, title, purpose, sponsorshipRequirement, officialUrl, verifiedAt]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        purpose: { type: string, enum: [WORK] }
+        sponsorshipRequirement: { type: string, enum: [REQUIRED, NOT_REQUIRED, DEPENDS, UNKNOWN] }
+        officialUrl: { type: [string, 'null'], format: uri }
+        verifiedAt: { type: [string, 'null'], format: date-time }
+        summary: { type: [string, 'null'] }
+    Classification:
+      type: object
+      required: [sourceCategoryCode, label, statistic]
+      properties:
+        sourceCategoryCode: { type: string }
+        label: { type: string }
+        statistic: { $ref: '#/components/schemas/Statistic' }
+    CountryDetail:
+      type: object
+      required: [country, statistics, classifications, visaPrograms, sources]
+      properties:
+        country: { $ref: '#/components/schemas/Country' }
+        statistics: { $ref: '#/components/schemas/Statistic' }
+        classifications: { type: array, items: { $ref: '#/components/schemas/Classification' } }
+        visaPrograms: { type: array, items: { $ref: '#/components/schemas/VisaProgram' } }
+        sources: { type: array, items: { $ref: '#/components/schemas/SourceRef' } }
+    Timepoint:
+      type: object
+      required: [year, statistic]
+      properties:
+        year: { type: integer }
+        statistic: { $ref: '#/components/schemas/Statistic' }
+    TimeseriesResponse:
+      type: object
+      required: [iso3, citizenship, purpose, metricType, comparisonGroupId, points]
+      properties:
+        iso3: { $ref: '#/components/schemas/Iso3' }
+        citizenship: { $ref: '#/components/schemas/Iso3' }
+        purpose: { type: string, enum: [WORK] }
+        metricType: { $ref: '#/components/schemas/MetricType' }
+        comparisonGroupId: { type: [string, 'null'] }
+        points: { type: array, items: { $ref: '#/components/schemas/Timepoint' } }
+    ApiError:
+      type: object
+      required: [code, message, correlationId]
+      properties:
+        code: { type: string }
+        message: { type: string }
+        correlationId: { type: string }

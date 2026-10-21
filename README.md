@@ -70,6 +70,6 @@ A suíte cobre contrato HTTP, zero versus ausência/supressão, filtros padrão,
 
 ## Contrato compartilhado
 
-A fonte de verdade permanece em `visa-atlas-spec-kit/specs/001-shared-api-contract/contracts/openapi.yaml`; este repositório não a modifica. Em 20/10/2026, a validação OpenAPI 3.1 identifica uma propriedade YAML acidental em `components.parameters.YearOptional`, causada pela descrição inline não delimitada após uma vírgula. Além disso, o gate SH-T011 ainda não possui `decision.md`. Por isso, a aprovação/validação formal do contrato permanece uma pendência do spec-kit, embora os cinco handlers e seus testes de comportamento estejam implementados.
+A fonte de verdade permanece em `visa-atlas-client/specs/001-shared-api-contract/contracts/openapi.yaml`. O arquivo `contracts/openapi.yaml` deste repositório é um snapshot versionado para permitir testes e CI isolados; mudanças contratuais devem nascer no client e ser sincronizadas aqui. Em 20/10/2026, a validação OpenAPI 3.1 identifica uma propriedade YAML acidental em `components.parameters.YearOptional`, causada pela descrição inline não delimitada após uma vírgula. Além disso, o gate SH-T011 ainda não possui `decision.md`. Por isso, a aprovação/validação formal do contrato permanece uma pendência, embora os cinco handlers e seus testes de comportamento estejam implementados.
 
 O problema pode ser reproduzido com `npm run contract:validate`. Após a correção/aprovação no spec-kit, esse comando deve entrar no gate obrigatório da CI.
