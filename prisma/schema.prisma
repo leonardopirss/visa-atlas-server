@@ -1,0 +1,214 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ReleaseStatus {
+  STAGING
+  VERIFIED
+  PUBLISHED
+  REJECTED
+}
+
+enum MetricType {
+  FIRST_RESIDENCE_PERMITS_GRANTED
+  WORK_VISAS_ISSUED
+  APPLICATIONS_RECEIVED
+  APPLICATIONS_REFUSED
+  DECISIONS_GRANTED
+  VALID_PERMIT_HOLDERS
+}
+
+enum DataStatus {
+  AVAILABLE
+  UNAVAILABLE
+  SUPPRESSED
+  ESTIMATED
+  REVISED
+}
+
+enum VisaPurposeCode {
+  WORK
+}
+
+enum SponsorshipRequirement {
+  REQUIRED
+  NOT_REQUIRED
+  DEPENDS
+  UNKNOWN
+}
+
+enum IngestionJobStatus {
+  RUNNING
+  SUCCEEDED
+  FAILED
+}
+
+model Country {
+  iso3          String              @id @db.Char(3)
+  iso2          String              @unique @db.Char(2)
+  namePt        String              @map("name_pt")
+  region        String
+  observations  MetricObservation[]
+  visaPrograms  VisaProgram[]
+  officialLinks OfficialLink[]
+
+  @@map("countries")
+}
+
+model Citizenship {
+  iso3         String              @id @db.Char(3)
+  namePt       String              @map("name_pt")
+  observations MetricObservation[]
+  groups       ComparisonGroup[]
+
+  @@map("citizenships")
+}
+
+model VisaPurpose {
+  code         VisaPurposeCode     @id
+  label        String
+  observations MetricObservation[]
+  groups       ComparisonGroup[]
+  visaPrograms VisaProgram[]
+
+  @@map("visa_purposes")
+}
+
+model SourceOrganization {
+  id            String          @id @default(cuid())
+  name          String
+  homepageUrl   String          @map("homepage_url")
+  license       String?
+  datasets      SourceDataset[]
+  officialLinks OfficialLink[]
+
+  @@map("source_organizations")
+}
+
+model SourceDataset {
+  id               String             @id @default(cuid())
+  organizationId   String             @map("organization_id")
+  code             String
+  url              String
+  methodologyUrl   String?            @map("methodology_url")
+  schemaVersion    String             @map("schema_version")
+  organization     SourceOrganization @relation(fields: [organizationId], references: [id])
+  releases         DatasetRelease[]
+  comparisonGroups ComparisonGroup[]
+  ingestionJobs    IngestionJob[]
+
+  @@unique([organizationId, code])
+  @@map("source_datasets")
+}
+
+model DatasetRelease {
+  id                String              @id @default(cuid())
+  datasetId         String              @map("dataset_id")
+  sourcePublishedAt DateTime?           @map("source_published_at") @db.Timestamptz(3)
+  fetchedAt         DateTime            @map("fetched_at") @db.Timestamptz(3)
+  validatedAt       DateTime?           @map("validated_at") @db.Timestamptz(3)
+  publishedAt       DateTime?           @map("published_at") @db.Timestamptz(3)
+  checksum          String
+  status            ReleaseStatus       @default(STAGING)
+  qualityReport     Json?               @map("quality_report")
+  dataset           SourceDataset       @relation(fields: [datasetId], references: [id])
+  observations      MetricObservation[]
+
+  @@unique([datasetId, checksum])
+  @@index([datasetId, status, publishedAt])
+  @@map("dataset_releases")
+}
+
+model ComparisonGroup {
+  id                 String              @id
+  datasetId          String              @map("dataset_id")
+  metricType         MetricType          @map("metric_type")
+  citizenshipIso3    String              @map("citizenship_iso3") @db.Char(3)
+  purposeCode        VisaPurposeCode     @map("purpose")
+  period             String
+  unit               String
+  methodologyVersion String              @map("methodology_version")
+  dataset            SourceDataset       @relation(fields: [datasetId], references: [id])
+  citizenship        Citizenship         @relation(fields: [citizenshipIso3], references: [iso3])
+  purpose            VisaPurpose         @relation(fields: [purposeCode], references: [code])
+  observations       MetricObservation[]
+
+  @@unique([datasetId, metricType, citizenshipIso3, purposeCode, period, unit, methodologyVersion])
+  @@index([citizenshipIso3, purposeCode, period, metricType])
+  @@map("comparison_groups")
+}
+
+model MetricObservation {
+  id                  String          @id @default(cuid())
+  releaseId           String          @map("release_id")
+  destinationIso3     String          @map("destination_iso3") @db.Char(3)
+  citizenshipIso3     String          @map("citizenship_iso3") @db.Char(3)
+  purposeCode         VisaPurposeCode @map("purpose")
+  metricType          MetricType      @map("metric_type")
+  sourceCategoryCode  String          @map("source_category_code")
+  sourceCategoryLabel String?         @map("source_category_label")
+  period              String
+  unit                String
+  value               BigInt?
+  dataStatus          DataStatus      @map("data_status")
+  comparisonGroupId   String          @map("comparison_group_id")
+  release             DatasetRelease  @relation(fields: [releaseId], references: [id], onDelete: Cascade)
+  destination         Country         @relation(fields: [destinationIso3], references: [iso3])
+  citizenship         Citizenship     @relation(fields: [citizenshipIso3], references: [iso3])
+  purpose             VisaPurpose     @relation(fields: [purposeCode], references: [code])
+  comparisonGroup     ComparisonGroup @relation(fields: [comparisonGroupId], references: [id])
+
+  @@unique([releaseId, destinationIso3, citizenshipIso3, purposeCode, metricType, sourceCategoryCode, period, unit])
+  @@index([citizenshipIso3, purposeCode, period, metricType, comparisonGroupId])
+  @@index([destinationIso3, period])
+  @@index([releaseId, sourceCategoryCode])
+  @@map("metric_observations")
+}
+
+model VisaProgram {
+  id                     String                 @id @default(cuid())
+  destinationIso3        String                 @map("destination_iso3") @db.Char(3)
+  purposeCode            VisaPurposeCode        @map("purpose")
+  officialTitle          String                 @map("official_title")
+  description            String?
+  sponsorshipRequirement SponsorshipRequirement @map("sponsorship_requirement")
+  verifiedAt             DateTime?              @map("verified_at") @db.Timestamptz(3)
+  officialUrl            String?                @map("official_url")
+  destination            Country                @relation(fields: [destinationIso3], references: [iso3])
+  purpose                VisaPurpose            @relation(fields: [purposeCode], references: [code])
+
+  @@index([destinationIso3, purposeCode, verifiedAt])
+  @@map("visa_programs")
+}
+
+model OfficialLink {
+  id                   String             @id @default(cuid())
+  countryIso3          String             @map("country_iso3") @db.Char(3)
+  sourceOrganizationId String             @map("source_organization_id")
+  kind                 String
+  url                  String
+  verifiedAt           DateTime?          @map("verified_at") @db.Timestamptz(3)
+  country              Country            @relation(fields: [countryIso3], references: [iso3])
+  sourceOrganization   SourceOrganization @relation(fields: [sourceOrganizationId], references: [id])
+
+  @@index([countryIso3, verifiedAt])
+  @@map("official_links")
+}
+
+model IngestionJob {
+  id              String             @id @default(cuid())
+  sourceDatasetId String             @map("source_dataset_id")
+  startedAt       DateTime           @map("started_at") @db.Timestamptz(3)
+  finishedAt      DateTime?          @map("finished_at") @db.Timestamptz(3)
+  status          IngestionJobStatus
+  report          Json?
+  sourceDataset   SourceDataset      @relation(fields: [sourceDatasetId], references: [id])
+
+  @@index([sourceDatasetId, startedAt])
+  @@map("ingestion_jobs")
+}

@@ -1,0 +1,20 @@
+{
+  "_testFixture": "SYNTHETIC_TEST_ONLY_NOT_FOR_PRODUCTION",
+  "id": ["geo", "citizen", "reason", "unit", "time"],
+  "size": [3, 1, 1, 1, 1],
+  "value": { "0": 42, "1": 0, "2": null },
+  "status": { "2": "c" },
+  "dimension": {
+    "geo": { "category": { "index": { "ES": 0, "DE": 1, "FR": 2 } } },
+    "citizen": { "category": { "index": { "BR": 0 } } },
+    "reason": {
+      "category": {
+        "index": { "EMP": 0 },
+        "label": { "EMP": "Employment reasons" }
+      }
+    },
+    "unit": { "category": { "index": { "PER": 0 } } },
+    "time": { "category": { "index": { "2025": 0 } } }
+  },
+  "updated": "2026-10-19T00:00:00Z"
+}

@@ -1,0 +1,66 @@
+{
+  "name": "visa-atlas-server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24 <27"
+  },
+  "overrides": {
+    "deepmerge-ts": "8.0.2"
+  },
+  "scripts": {
+    "build": "nest build",
+    "start": "node dist/main.js",
+    "start:dev": "nest start --watch",
+    "lint": "eslint .",
+    "format": "prettier --write \"{src,test,prisma}/**/*.{ts,json}\" \"*.{json,yml,yaml}\"",
+    "format:check": "prettier --check \"{src,test,prisma}/**/*.{ts,json}\" \"*.{json,yml,yaml}\"",
+    "typecheck": "tsc --noEmit",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest --runInBand",
+    "test:unit": "NODE_OPTIONS=--experimental-vm-modules jest --runInBand --testPathIgnorePatterns=/test/",
+    "test:integration": "NODE_OPTIONS=--experimental-vm-modules jest --runInBand test/integration",
+    "test:contract": "NODE_OPTIONS=--experimental-vm-modules jest --runInBand test/contract",
+    "test:cov": "NODE_OPTIONS=--experimental-vm-modules jest --runInBand --coverage",
+    "contract:validate": "node scripts/validate-openapi.mjs",
+    "ingest:eurostat": "npm run build && node dist/cli/ingest-eurostat.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate deploy"
+  },
+  "dependencies": {
+    "@nestjs/common": "12.2.0",
+    "@nestjs/config": "12.0.1",
+    "@nestjs/core": "12.2.0",
+    "@nestjs/platform-express": "12.2.0",
+    "@nestjs/swagger": "12.0.2",
+    "@prisma/client": "6.19.3",
+    "class-transformer": "0.5.1",
+    "class-validator": "0.14.2",
+    "helmet": "8.1.0",
+    "reflect-metadata": "0.2.2",
+    "rxjs": "7.8.2"
+  },
+  "devDependencies": {
+    "@apidevtools/swagger-parser": "13.1.0",
+    "@eslint/js": "9.39.1",
+    "@nestjs/cli": "12.0.9",
+    "@nestjs/testing": "12.2.0",
+    "@types/express": "5.0.5",
+    "@types/jest": "30.0.0",
+    "@types/node": "24.10.1",
+    "@types/supertest": "6.0.3",
+    "eslint": "9.39.1",
+    "eslint-config-prettier": "10.1.8",
+    "eslint-plugin-jest": "29.0.1",
+    "globals": "16.5.0",
+    "jest": "30.2.0",
+    "prettier": "3.7.4",
+    "prisma": "6.19.3",
+    "supertest": "7.1.4",
+    "ts-jest": "29.4.6",
+    "ts-node": "10.9.2",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.48.1",
+    "yaml": "2.8.1"
+  }
+}
