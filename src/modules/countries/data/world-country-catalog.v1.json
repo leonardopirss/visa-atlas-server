@@ -1,0 +1,1512 @@
+{
+  "schemaVersion": 1,
+  "catalogVersion": "world-countries-5.1.0+cldr-48.0-pt-BR",
+  "source": {
+    "name": "mledoze/countries",
+    "version": "5.1.0",
+    "url": "https://github.com/mledoze/countries",
+    "sourceSha256": "359431fb9475666dfad1ea5e72e53521cef40520f65eecd08e02ba569eb8491b",
+    "names": "Unicode CLDR 48 via ICU 78.3 Intl.DisplayNames pt-BR"
+  },
+  "license": {
+    "spdx": "ODbL-1.0",
+    "url": "https://opendatacommons.org/licenses/odbl/1-0/",
+    "notice": "Contém informações de mledoze/countries, disponibilizadas sob a Open Database License (ODbL) v1.0."
+  },
+  "countries": [
+    {
+      "iso2": "AW",
+      "iso3": "ABW",
+      "namePt": "Aruba",
+      "region": "Américas"
+    },
+    {
+      "iso2": "AF",
+      "iso3": "AFG",
+      "namePt": "Afeganistão",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "AO",
+      "iso3": "AGO",
+      "namePt": "Angola",
+      "region": "África"
+    },
+    {
+      "iso2": "AI",
+      "iso3": "AIA",
+      "namePt": "Anguila",
+      "region": "Américas"
+    },
+    {
+      "iso2": "AX",
+      "iso3": "ALA",
+      "namePt": "Ilhas Aland",
+      "region": "Europa"
+    },
+    {
+      "iso2": "AL",
+      "iso3": "ALB",
+      "namePt": "Albânia",
+      "region": "Europa"
+    },
+    {
+      "iso2": "AD",
+      "iso3": "AND",
+      "namePt": "Andorra",
+      "region": "Europa"
+    },
+    {
+      "iso2": "AE",
+      "iso3": "ARE",
+      "namePt": "Emirados Árabes Unidos",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "AR",
+      "iso3": "ARG",
+      "namePt": "Argentina",
+      "region": "Américas"
+    },
+    {
+      "iso2": "AM",
+      "iso3": "ARM",
+      "namePt": "Armênia",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "AS",
+      "iso3": "ASM",
+      "namePt": "Samoa Americana",
+      "region": "Oceania"
+    },
+    {
+      "iso2": "AQ",
+      "iso3": "ATA",
+      "namePt": "Antártida",
+      "region": "Antártida"
+    },
+    {
+      "iso2": "TF",
+      "iso3": "ATF",
+      "namePt": "Territórios Franceses do Sul",
+      "region": "Antártida"
+    },
+    {
+      "iso2": "AG",
+      "iso3": "ATG",
+      "namePt": "Antígua e Barbuda",
+      "region": "Américas"
+    },
+    {
+      "iso2": "AU",
+      "iso3": "AUS",
+      "namePt": "Austrália",
+      "region": "Oceania"
+    },
+    {
+      "iso2": "AT",
+      "iso3": "AUT",
+      "namePt": "Áustria",
+      "region": "Europa"
+    },
+    {
+      "iso2": "AZ",
+      "iso3": "AZE",
+      "namePt": "Azerbaijão",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "BI",
+      "iso3": "BDI",
+      "namePt": "Burundi",
+      "region": "África"
+    },
+    {
+      "iso2": "BE",
+      "iso3": "BEL",
+      "namePt": "Bélgica",
+      "region": "Europa"
+    },
+    {
+      "iso2": "BJ",
+      "iso3": "BEN",
+      "namePt": "Benin",
+      "region": "África"
+    },
+    {
+      "iso2": "BQ",
+      "iso3": "BES",
+      "namePt": "Países Baixos Caribenhos",
+      "region": "Américas"
+    },
+    {
+      "iso2": "BF",
+      "iso3": "BFA",
+      "namePt": "Burquina Faso",
+      "region": "África"
+    },
+    {
+      "iso2": "BD",
+      "iso3": "BGD",
+      "namePt": "Bangladesh",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "BG",
+      "iso3": "BGR",
+      "namePt": "Bulgária",
+      "region": "Europa"
+    },
+    {
+      "iso2": "BH",
+      "iso3": "BHR",
+      "namePt": "Barein",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "BS",
+      "iso3": "BHS",
+      "namePt": "Bahamas",
+      "region": "Américas"
+    },
+    {
+      "iso2": "BA",
+      "iso3": "BIH",
+      "namePt": "Bósnia e Herzegovina",
+      "region": "Europa"
+    },
+    {
+      "iso2": "BL",
+      "iso3": "BLM",
+      "namePt": "São Bartolomeu",
+      "region": "Américas"
+    },
+    {
+      "iso2": "BY",
+      "iso3": "BLR",
+      "namePt": "Bielorrússia",
+      "region": "Europa"
+    },
+    {
+      "iso2": "BZ",
+      "iso3": "BLZ",
+      "namePt": "Belize",
+      "region": "Américas"
+    },
+    {
+      "iso2": "BM",
+      "iso3": "BMU",
+      "namePt": "Bermudas",
+      "region": "Américas"
+    },
+    {
+      "iso2": "BO",
+      "iso3": "BOL",
+      "namePt": "Bolívia",
+      "region": "Américas"
+    },
+    {
+      "iso2": "BR",
+      "iso3": "BRA",
+      "namePt": "Brasil",
+      "region": "Américas"
+    },
+    {
+      "iso2": "BB",
+      "iso3": "BRB",
+      "namePt": "Barbados",
+      "region": "Américas"
+    },
+    {
+      "iso2": "BN",
+      "iso3": "BRN",
+      "namePt": "Brunei",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "BT",
+      "iso3": "BTN",
+      "namePt": "Butão",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "BV",
+      "iso3": "BVT",
+      "namePt": "Ilha Bouvet",
+      "region": "Antártida"
+    },
+    {
+      "iso2": "BW",
+      "iso3": "BWA",
+      "namePt": "Botsuana",
+      "region": "África"
+    },
+    {
+      "iso2": "CF",
+      "iso3": "CAF",
+      "namePt": "República Centro-Africana",
+      "region": "África"
+    },
+    {
+      "iso2": "CA",
+      "iso3": "CAN",
+      "namePt": "Canadá",
+      "region": "Américas"
+    },
+    {
+      "iso2": "CC",
+      "iso3": "CCK",
+      "namePt": "Ilhas Cocos (Keeling)",
+      "region": "Oceania"
+    },
+    {
+      "iso2": "CH",
+      "iso3": "CHE",
+      "namePt": "Suíça",
+      "region": "Europa"
+    },
+    {
+      "iso2": "CL",
+      "iso3": "CHL",
+      "namePt": "Chile",
+      "region": "Américas"
+    },
+    {
+      "iso2": "CN",
+      "iso3": "CHN",
+      "namePt": "China",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "CI",
+      "iso3": "CIV",
+      "namePt": "Costa do Marfim",
+      "region": "África"
+    },
+    {
+      "iso2": "CM",
+      "iso3": "CMR",
+      "namePt": "Camarões",
+      "region": "África"
+    },
+    {
+      "iso2": "CD",
+      "iso3": "COD",
+      "namePt": "Congo - Kinshasa",
+      "region": "África"
+    },
+    {
+      "iso2": "CG",
+      "iso3": "COG",
+      "namePt": "República do Congo",
+      "region": "África"
+    },
+    {
+      "iso2": "CK",
+      "iso3": "COK",
+      "namePt": "Ilhas Cook",
+      "region": "Oceania"
+    },
+    {
+      "iso2": "CO",
+      "iso3": "COL",
+      "namePt": "Colômbia",
+      "region": "Américas"
+    },
+    {
+      "iso2": "KM",
+      "iso3": "COM",
+      "namePt": "Comores",
+      "region": "África"
+    },
+    {
+      "iso2": "CV",
+      "iso3": "CPV",
+      "namePt": "Cabo Verde",
+      "region": "África"
+    },
+    {
+      "iso2": "CR",
+      "iso3": "CRI",
+      "namePt": "Costa Rica",
+      "region": "Américas"
+    },
+    {
+      "iso2": "CU",
+      "iso3": "CUB",
+      "namePt": "Cuba",
+      "region": "Américas"
+    },
+    {
+      "iso2": "CW",
+      "iso3": "CUW",
+      "namePt": "Curaçao",
+      "region": "Américas"
+    },
+    {
+      "iso2": "CX",
+      "iso3": "CXR",
+      "namePt": "Ilha Christmas",
+      "region": "Oceania"
+    },
+    {
+      "iso2": "KY",
+      "iso3": "CYM",
+      "namePt": "Ilhas Cayman",
+      "region": "Américas"
+    },
+    {
+      "iso2": "CY",
+      "iso3": "CYP",
+      "namePt": "Chipre",
+      "region": "Europa"
+    },
+    {
+      "iso2": "CZ",
+      "iso3": "CZE",
+      "namePt": "Tchéquia",
+      "region": "Europa"
+    },
+    {
+      "iso2": "DE",
+      "iso3": "DEU",
+      "namePt": "Alemanha",
+      "region": "Europa"
+    },
+    {
+      "iso2": "DJ",
+      "iso3": "DJI",
+      "namePt": "Djibuti",
+      "region": "África"
+    },
+    {
+      "iso2": "DM",
+      "iso3": "DMA",
+      "namePt": "Dominica",
+      "region": "Américas"
+    },
+    {
+      "iso2": "DK",
+      "iso3": "DNK",
+      "namePt": "Dinamarca",
+      "region": "Europa"
+    },
+    {
+      "iso2": "DO",
+      "iso3": "DOM",
+      "namePt": "República Dominicana",
+      "region": "Américas"
+    },
+    {
+      "iso2": "DZ",
+      "iso3": "DZA",
+      "namePt": "Argélia",
+      "region": "África"
+    },
+    {
+      "iso2": "EC",
+      "iso3": "ECU",
+      "namePt": "Equador",
+      "region": "Américas"
+    },
+    {
+      "iso2": "EG",
+      "iso3": "EGY",
+      "namePt": "Egito",
+      "region": "África"
+    },
+    {
+      "iso2": "ER",
+      "iso3": "ERI",
+      "namePt": "Eritreia",
+      "region": "África"
+    },
+    {
+      "iso2": "EH",
+      "iso3": "ESH",
+      "namePt": "Saara Ocidental",
+      "region": "África"
+    },
+    {
+      "iso2": "ES",
+      "iso3": "ESP",
+      "namePt": "Espanha",
+      "region": "Europa"
+    },
+    {
+      "iso2": "EE",
+      "iso3": "EST",
+      "namePt": "Estônia",
+      "region": "Europa"
+    },
+    {
+      "iso2": "ET",
+      "iso3": "ETH",
+      "namePt": "Etiópia",
+      "region": "África"
+    },
+    {
+      "iso2": "FI",
+      "iso3": "FIN",
+      "namePt": "Finlândia",
+      "region": "Europa"
+    },
+    {
+      "iso2": "FJ",
+      "iso3": "FJI",
+      "namePt": "Fiji",
+      "region": "Oceania"
+    },
+    {
+      "iso2": "FK",
+      "iso3": "FLK",
+      "namePt": "Ilhas Malvinas",
+      "region": "Américas"
+    },
+    {
+      "iso2": "FR",
+      "iso3": "FRA",
+      "namePt": "França",
+      "region": "Europa"
+    },
+    {
+      "iso2": "FO",
+      "iso3": "FRO",
+      "namePt": "Ilhas Faroé",
+      "region": "Europa"
+    },
+    {
+      "iso2": "FM",
+      "iso3": "FSM",
+      "namePt": "Micronésia",
+      "region": "Oceania"
+    },
+    {
+      "iso2": "GA",
+      "iso3": "GAB",
+      "namePt": "Gabão",
+      "region": "África"
+    },
+    {
+      "iso2": "GB",
+      "iso3": "GBR",
+      "namePt": "Reino Unido",
+      "region": "Europa"
+    },
+    {
+      "iso2": "GE",
+      "iso3": "GEO",
+      "namePt": "Geórgia",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "GG",
+      "iso3": "GGY",
+      "namePt": "Guernsey",
+      "region": "Europa"
+    },
+    {
+      "iso2": "GH",
+      "iso3": "GHA",
+      "namePt": "Gana",
+      "region": "África"
+    },
+    {
+      "iso2": "GI",
+      "iso3": "GIB",
+      "namePt": "Gibraltar",
+      "region": "Europa"
+    },
+    {
+      "iso2": "GN",
+      "iso3": "GIN",
+      "namePt": "Guiné",
+      "region": "África"
+    },
+    {
+      "iso2": "GP",
+      "iso3": "GLP",
+      "namePt": "Guadalupe",
+      "region": "Américas"
+    },
+    {
+      "iso2": "GM",
+      "iso3": "GMB",
+      "namePt": "Gâmbia",
+      "region": "África"
+    },
+    {
+      "iso2": "GW",
+      "iso3": "GNB",
+      "namePt": "Guiné-Bissau",
+      "region": "África"
+    },
+    {
+      "iso2": "GQ",
+      "iso3": "GNQ",
+      "namePt": "Guiné Equatorial",
+      "region": "África"
+    },
+    {
+      "iso2": "GR",
+      "iso3": "GRC",
+      "namePt": "Grécia",
+      "region": "Europa"
+    },
+    {
+      "iso2": "GD",
+      "iso3": "GRD",
+      "namePt": "Granada",
+      "region": "Américas"
+    },
+    {
+      "iso2": "GL",
+      "iso3": "GRL",
+      "namePt": "Groenlândia",
+      "region": "Américas"
+    },
+    {
+      "iso2": "GT",
+      "iso3": "GTM",
+      "namePt": "Guatemala",
+      "region": "Américas"
+    },
+    {
+      "iso2": "GF",
+      "iso3": "GUF",
+      "namePt": "Guiana Francesa",
+      "region": "Américas"
+    },
+    {
+      "iso2": "GU",
+      "iso3": "GUM",
+      "namePt": "Guam",
+      "region": "Oceania"
+    },
+    {
+      "iso2": "GY",
+      "iso3": "GUY",
+      "namePt": "Guiana",
+      "region": "Américas"
+    },
+    {
+      "iso2": "HK",
+      "iso3": "HKG",
+      "namePt": "Hong Kong, RAE da China",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "HM",
+      "iso3": "HMD",
+      "namePt": "Ilhas Heard e McDonald",
+      "region": "Antártida"
+    },
+    {
+      "iso2": "HN",
+      "iso3": "HND",
+      "namePt": "Honduras",
+      "region": "Américas"
+    },
+    {
+      "iso2": "HR",
+      "iso3": "HRV",
+      "namePt": "Croácia",
+      "region": "Europa"
+    },
+    {
+      "iso2": "HT",
+      "iso3": "HTI",
+      "namePt": "Haiti",
+      "region": "Américas"
+    },
+    {
+      "iso2": "HU",
+      "iso3": "HUN",
+      "namePt": "Hungria",
+      "region": "Europa"
+    },
+    {
+      "iso2": "ID",
+      "iso3": "IDN",
+      "namePt": "Indonésia",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "IM",
+      "iso3": "IMN",
+      "namePt": "Ilha de Man",
+      "region": "Europa"
+    },
+    {
+      "iso2": "IN",
+      "iso3": "IND",
+      "namePt": "Índia",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "IO",
+      "iso3": "IOT",
+      "namePt": "Território Britânico do Oceano Índico",
+      "region": "África"
+    },
+    {
+      "iso2": "IE",
+      "iso3": "IRL",
+      "namePt": "Irlanda",
+      "region": "Europa"
+    },
+    {
+      "iso2": "IR",
+      "iso3": "IRN",
+      "namePt": "Irã",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "IQ",
+      "iso3": "IRQ",
+      "namePt": "Iraque",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "IS",
+      "iso3": "ISL",
+      "namePt": "Islândia",
+      "region": "Europa"
+    },
+    {
+      "iso2": "IL",
+      "iso3": "ISR",
+      "namePt": "Israel",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "IT",
+      "iso3": "ITA",
+      "namePt": "Itália",
+      "region": "Europa"
+    },
+    {
+      "iso2": "JM",
+      "iso3": "JAM",
+      "namePt": "Jamaica",
+      "region": "Américas"
+    },
+    {
+      "iso2": "JE",
+      "iso3": "JEY",
+      "namePt": "Jersey",
+      "region": "Europa"
+    },
+    {
+      "iso2": "JO",
+      "iso3": "JOR",
+      "namePt": "Jordânia",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "JP",
+      "iso3": "JPN",
+      "namePt": "Japão",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "KZ",
+      "iso3": "KAZ",
+      "namePt": "Cazaquistão",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "KE",
+      "iso3": "KEN",
+      "namePt": "Quênia",
+      "region": "África"
+    },
+    {
+      "iso2": "KG",
+      "iso3": "KGZ",
+      "namePt": "Quirguistão",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "KH",
+      "iso3": "KHM",
+      "namePt": "Camboja",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "KI",
+      "iso3": "KIR",
+      "namePt": "Quiribati",
+      "region": "Oceania"
+    },
+    {
+      "iso2": "KN",
+      "iso3": "KNA",
+      "namePt": "São Cristóvão e Névis",
+      "region": "Américas"
+    },
+    {
+      "iso2": "KR",
+      "iso3": "KOR",
+      "namePt": "Coreia do Sul",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "KW",
+      "iso3": "KWT",
+      "namePt": "Kuwait",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "LA",
+      "iso3": "LAO",
+      "namePt": "Laos",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "LB",
+      "iso3": "LBN",
+      "namePt": "Líbano",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "LR",
+      "iso3": "LBR",
+      "namePt": "Libéria",
+      "region": "África"
+    },
+    {
+      "iso2": "LY",
+      "iso3": "LBY",
+      "namePt": "Líbia",
+      "region": "África"
+    },
+    {
+      "iso2": "LC",
+      "iso3": "LCA",
+      "namePt": "Santa Lúcia",
+      "region": "Américas"
+    },
+    {
+      "iso2": "LI",
+      "iso3": "LIE",
+      "namePt": "Liechtenstein",
+      "region": "Europa"
+    },
+    {
+      "iso2": "LK",
+      "iso3": "LKA",
+      "namePt": "Sri Lanka",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "LS",
+      "iso3": "LSO",
+      "namePt": "Lesoto",
+      "region": "África"
+    },
+    {
+      "iso2": "LT",
+      "iso3": "LTU",
+      "namePt": "Lituânia",
+      "region": "Europa"
+    },
+    {
+      "iso2": "LU",
+      "iso3": "LUX",
+      "namePt": "Luxemburgo",
+      "region": "Europa"
+    },
+    {
+      "iso2": "LV",
+      "iso3": "LVA",
+      "namePt": "Letônia",
+      "region": "Europa"
+    },
+    {
+      "iso2": "MO",
+      "iso3": "MAC",
+      "namePt": "Macau, RAE da China",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "MF",
+      "iso3": "MAF",
+      "namePt": "São Martinho",
+      "region": "Américas"
+    },
+    {
+      "iso2": "MA",
+      "iso3": "MAR",
+      "namePt": "Marrocos",
+      "region": "África"
+    },
+    {
+      "iso2": "MC",
+      "iso3": "MCO",
+      "namePt": "Mônaco",
+      "region": "Europa"
+    },
+    {
+      "iso2": "MD",
+      "iso3": "MDA",
+      "namePt": "Moldávia",
+      "region": "Europa"
+    },
+    {
+      "iso2": "MG",
+      "iso3": "MDG",
+      "namePt": "Madagascar",
+      "region": "África"
+    },
+    {
+      "iso2": "MV",
+      "iso3": "MDV",
+      "namePt": "Maldivas",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "MX",
+      "iso3": "MEX",
+      "namePt": "México",
+      "region": "Américas"
+    },
+    {
+      "iso2": "MH",
+      "iso3": "MHL",
+      "namePt": "Ilhas Marshall",
+      "region": "Oceania"
+    },
+    {
+      "iso2": "MK",
+      "iso3": "MKD",
+      "namePt": "Macedônia do Norte",
+      "region": "Europa"
+    },
+    {
+      "iso2": "ML",
+      "iso3": "MLI",
+      "namePt": "Mali",
+      "region": "África"
+    },
+    {
+      "iso2": "MT",
+      "iso3": "MLT",
+      "namePt": "Malta",
+      "region": "Europa"
+    },
+    {
+      "iso2": "MM",
+      "iso3": "MMR",
+      "namePt": "Mianmar (Birmânia)",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "ME",
+      "iso3": "MNE",
+      "namePt": "Montenegro",
+      "region": "Europa"
+    },
+    {
+      "iso2": "MN",
+      "iso3": "MNG",
+      "namePt": "Mongólia",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "MP",
+      "iso3": "MNP",
+      "namePt": "Ilhas Marianas do Norte",
+      "region": "Oceania"
+    },
+    {
+      "iso2": "MZ",
+      "iso3": "MOZ",
+      "namePt": "Moçambique",
+      "region": "África"
+    },
+    {
+      "iso2": "MR",
+      "iso3": "MRT",
+      "namePt": "Mauritânia",
+      "region": "África"
+    },
+    {
+      "iso2": "MS",
+      "iso3": "MSR",
+      "namePt": "Montserrat",
+      "region": "Américas"
+    },
+    {
+      "iso2": "MQ",
+      "iso3": "MTQ",
+      "namePt": "Martinica",
+      "region": "Américas"
+    },
+    {
+      "iso2": "MU",
+      "iso3": "MUS",
+      "namePt": "Maurício",
+      "region": "África"
+    },
+    {
+      "iso2": "MW",
+      "iso3": "MWI",
+      "namePt": "Malaui",
+      "region": "África"
+    },
+    {
+      "iso2": "MY",
+      "iso3": "MYS",
+      "namePt": "Malásia",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "YT",
+      "iso3": "MYT",
+      "namePt": "Mayotte",
+      "region": "África"
+    },
+    {
+      "iso2": "NA",
+      "iso3": "NAM",
+      "namePt": "Namíbia",
+      "region": "África"
+    },
+    {
+      "iso2": "NC",
+      "iso3": "NCL",
+      "namePt": "Nova Caledônia",
+      "region": "Oceania"
+    },
+    {
+      "iso2": "NE",
+      "iso3": "NER",
+      "namePt": "Níger",
+      "region": "África"
+    },
+    {
+      "iso2": "NF",
+      "iso3": "NFK",
+      "namePt": "Ilha Norfolk",
+      "region": "Oceania"
+    },
+    {
+      "iso2": "NG",
+      "iso3": "NGA",
+      "namePt": "Nigéria",
+      "region": "África"
+    },
+    {
+      "iso2": "NI",
+      "iso3": "NIC",
+      "namePt": "Nicarágua",
+      "region": "Américas"
+    },
+    {
+      "iso2": "NU",
+      "iso3": "NIU",
+      "namePt": "Niue",
+      "region": "Oceania"
+    },
+    {
+      "iso2": "NL",
+      "iso3": "NLD",
+      "namePt": "Países Baixos",
+      "region": "Europa"
+    },
+    {
+      "iso2": "NO",
+      "iso3": "NOR",
+      "namePt": "Noruega",
+      "region": "Europa"
+    },
+    {
+      "iso2": "NP",
+      "iso3": "NPL",
+      "namePt": "Nepal",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "NR",
+      "iso3": "NRU",
+      "namePt": "Nauru",
+      "region": "Oceania"
+    },
+    {
+      "iso2": "NZ",
+      "iso3": "NZL",
+      "namePt": "Nova Zelândia",
+      "region": "Oceania"
+    },
+    {
+      "iso2": "OM",
+      "iso3": "OMN",
+      "namePt": "Omã",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "PK",
+      "iso3": "PAK",
+      "namePt": "Paquistão",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "PA",
+      "iso3": "PAN",
+      "namePt": "Panamá",
+      "region": "Américas"
+    },
+    {
+      "iso2": "PN",
+      "iso3": "PCN",
+      "namePt": "Ilhas Pitcairn",
+      "region": "Oceania"
+    },
+    {
+      "iso2": "PE",
+      "iso3": "PER",
+      "namePt": "Peru",
+      "region": "Américas"
+    },
+    {
+      "iso2": "PH",
+      "iso3": "PHL",
+      "namePt": "Filipinas",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "PW",
+      "iso3": "PLW",
+      "namePt": "Palau",
+      "region": "Oceania"
+    },
+    {
+      "iso2": "PG",
+      "iso3": "PNG",
+      "namePt": "Papua-Nova Guiné",
+      "region": "Oceania"
+    },
+    {
+      "iso2": "PL",
+      "iso3": "POL",
+      "namePt": "Polônia",
+      "region": "Europa"
+    },
+    {
+      "iso2": "PR",
+      "iso3": "PRI",
+      "namePt": "Porto Rico",
+      "region": "Américas"
+    },
+    {
+      "iso2": "KP",
+      "iso3": "PRK",
+      "namePt": "Coreia do Norte",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "PT",
+      "iso3": "PRT",
+      "namePt": "Portugal",
+      "region": "Europa"
+    },
+    {
+      "iso2": "PY",
+      "iso3": "PRY",
+      "namePt": "Paraguai",
+      "region": "Américas"
+    },
+    {
+      "iso2": "PS",
+      "iso3": "PSE",
+      "namePt": "Territórios palestinos",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "PF",
+      "iso3": "PYF",
+      "namePt": "Polinésia Francesa",
+      "region": "Oceania"
+    },
+    {
+      "iso2": "QA",
+      "iso3": "QAT",
+      "namePt": "Catar",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "RE",
+      "iso3": "REU",
+      "namePt": "Reunião",
+      "region": "África"
+    },
+    {
+      "iso2": "RO",
+      "iso3": "ROU",
+      "namePt": "Romênia",
+      "region": "Europa"
+    },
+    {
+      "iso2": "RU",
+      "iso3": "RUS",
+      "namePt": "Rússia",
+      "region": "Europa"
+    },
+    {
+      "iso2": "RW",
+      "iso3": "RWA",
+      "namePt": "Ruanda",
+      "region": "África"
+    },
+    {
+      "iso2": "SA",
+      "iso3": "SAU",
+      "namePt": "Arábia Saudita",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "SD",
+      "iso3": "SDN",
+      "namePt": "Sudão",
+      "region": "África"
+    },
+    {
+      "iso2": "SN",
+      "iso3": "SEN",
+      "namePt": "Senegal",
+      "region": "África"
+    },
+    {
+      "iso2": "SG",
+      "iso3": "SGP",
+      "namePt": "Singapura",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "GS",
+      "iso3": "SGS",
+      "namePt": "Ilhas Geórgia do Sul e Sandwich do Sul",
+      "region": "Antártida"
+    },
+    {
+      "iso2": "SH",
+      "iso3": "SHN",
+      "namePt": "Santa Helena",
+      "region": "África"
+    },
+    {
+      "iso2": "SJ",
+      "iso3": "SJM",
+      "namePt": "Svalbard e Jan Mayen",
+      "region": "Europa"
+    },
+    {
+      "iso2": "SB",
+      "iso3": "SLB",
+      "namePt": "Ilhas Salomão",
+      "region": "Oceania"
+    },
+    {
+      "iso2": "SL",
+      "iso3": "SLE",
+      "namePt": "Serra Leoa",
+      "region": "África"
+    },
+    {
+      "iso2": "SV",
+      "iso3": "SLV",
+      "namePt": "El Salvador",
+      "region": "Américas"
+    },
+    {
+      "iso2": "SM",
+      "iso3": "SMR",
+      "namePt": "San Marino",
+      "region": "Europa"
+    },
+    {
+      "iso2": "SO",
+      "iso3": "SOM",
+      "namePt": "Somália",
+      "region": "África"
+    },
+    {
+      "iso2": "PM",
+      "iso3": "SPM",
+      "namePt": "São Pedro e Miquelão",
+      "region": "Américas"
+    },
+    {
+      "iso2": "RS",
+      "iso3": "SRB",
+      "namePt": "Sérvia",
+      "region": "Europa"
+    },
+    {
+      "iso2": "SS",
+      "iso3": "SSD",
+      "namePt": "Sudão do Sul",
+      "region": "África"
+    },
+    {
+      "iso2": "ST",
+      "iso3": "STP",
+      "namePt": "São Tomé e Príncipe",
+      "region": "África"
+    },
+    {
+      "iso2": "SR",
+      "iso3": "SUR",
+      "namePt": "Suriname",
+      "region": "Américas"
+    },
+    {
+      "iso2": "SK",
+      "iso3": "SVK",
+      "namePt": "Eslováquia",
+      "region": "Europa"
+    },
+    {
+      "iso2": "SI",
+      "iso3": "SVN",
+      "namePt": "Eslovênia",
+      "region": "Europa"
+    },
+    {
+      "iso2": "SE",
+      "iso3": "SWE",
+      "namePt": "Suécia",
+      "region": "Europa"
+    },
+    {
+      "iso2": "SZ",
+      "iso3": "SWZ",
+      "namePt": "Essuatíni",
+      "region": "África"
+    },
+    {
+      "iso2": "SX",
+      "iso3": "SXM",
+      "namePt": "Sint Maarten",
+      "region": "Américas"
+    },
+    {
+      "iso2": "SC",
+      "iso3": "SYC",
+      "namePt": "Seicheles",
+      "region": "África"
+    },
+    {
+      "iso2": "SY",
+      "iso3": "SYR",
+      "namePt": "Síria",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "TC",
+      "iso3": "TCA",
+      "namePt": "Ilhas Turcas e Caicos",
+      "region": "Américas"
+    },
+    {
+      "iso2": "TD",
+      "iso3": "TCD",
+      "namePt": "Chade",
+      "region": "África"
+    },
+    {
+      "iso2": "TG",
+      "iso3": "TGO",
+      "namePt": "Togo",
+      "region": "África"
+    },
+    {
+      "iso2": "TH",
+      "iso3": "THA",
+      "namePt": "Tailândia",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "TJ",
+      "iso3": "TJK",
+      "namePt": "Tadjiquistão",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "TK",
+      "iso3": "TKL",
+      "namePt": "Tokelau",
+      "region": "Oceania"
+    },
+    {
+      "iso2": "TM",
+      "iso3": "TKM",
+      "namePt": "Turcomenistão",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "TL",
+      "iso3": "TLS",
+      "namePt": "Timor-Leste",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "TO",
+      "iso3": "TON",
+      "namePt": "Tonga",
+      "region": "Oceania"
+    },
+    {
+      "iso2": "TT",
+      "iso3": "TTO",
+      "namePt": "Trinidad e Tobago",
+      "region": "Américas"
+    },
+    {
+      "iso2": "TN",
+      "iso3": "TUN",
+      "namePt": "Tunísia",
+      "region": "África"
+    },
+    {
+      "iso2": "TR",
+      "iso3": "TUR",
+      "namePt": "Turquia",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "TV",
+      "iso3": "TUV",
+      "namePt": "Tuvalu",
+      "region": "Oceania"
+    },
+    {
+      "iso2": "TW",
+      "iso3": "TWN",
+      "namePt": "Taiwan",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "TZ",
+      "iso3": "TZA",
+      "namePt": "Tanzânia",
+      "region": "África"
+    },
+    {
+      "iso2": "UG",
+      "iso3": "UGA",
+      "namePt": "Uganda",
+      "region": "África"
+    },
+    {
+      "iso2": "UA",
+      "iso3": "UKR",
+      "namePt": "Ucrânia",
+      "region": "Europa"
+    },
+    {
+      "iso2": "UM",
+      "iso3": "UMI",
+      "namePt": "Ilhas Menores Distantes dos EUA",
+      "region": "Américas"
+    },
+    {
+      "iso2": "UY",
+      "iso3": "URY",
+      "namePt": "Uruguai",
+      "region": "Américas"
+    },
+    {
+      "iso2": "US",
+      "iso3": "USA",
+      "namePt": "Estados Unidos",
+      "region": "Américas"
+    },
+    {
+      "iso2": "UZ",
+      "iso3": "UZB",
+      "namePt": "Uzbequistão",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "VA",
+      "iso3": "VAT",
+      "namePt": "Cidade do Vaticano",
+      "region": "Europa"
+    },
+    {
+      "iso2": "VC",
+      "iso3": "VCT",
+      "namePt": "São Vicente e Granadinas",
+      "region": "Américas"
+    },
+    {
+      "iso2": "VE",
+      "iso3": "VEN",
+      "namePt": "Venezuela",
+      "region": "Américas"
+    },
+    {
+      "iso2": "VG",
+      "iso3": "VGB",
+      "namePt": "Ilhas Virgens Britânicas",
+      "region": "Américas"
+    },
+    {
+      "iso2": "VI",
+      "iso3": "VIR",
+      "namePt": "Ilhas Virgens Americanas",
+      "region": "Américas"
+    },
+    {
+      "iso2": "VN",
+      "iso3": "VNM",
+      "namePt": "Vietnã",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "VU",
+      "iso3": "VUT",
+      "namePt": "Vanuatu",
+      "region": "Oceania"
+    },
+    {
+      "iso2": "WF",
+      "iso3": "WLF",
+      "namePt": "Wallis e Futuna",
+      "region": "Oceania"
+    },
+    {
+      "iso2": "WS",
+      "iso3": "WSM",
+      "namePt": "Samoa",
+      "region": "Oceania"
+    },
+    {
+      "iso2": "YE",
+      "iso3": "YEM",
+      "namePt": "Iêmen",
+      "region": "Ásia"
+    },
+    {
+      "iso2": "ZA",
+      "iso3": "ZAF",
+      "namePt": "África do Sul",
+      "region": "África"
+    },
+    {
+      "iso2": "ZM",
+      "iso3": "ZMB",
+      "namePt": "Zâmbia",
+      "region": "África"
+    },
+    {
+      "iso2": "ZW",
+      "iso3": "ZWE",
+      "namePt": "Zimbábue",
+      "region": "África"
+    }
+  ]
+}

@@ -6,10 +6,12 @@ import { VisaProgramsModule } from '../visa-programs/visa-programs.module.js';
 import { CountriesController } from './countries.controller.js';
 import { CountriesService } from './countries.service.js';
 import { CountryDetailService } from './services/country-detail.service.js';
+import { CountryCatalogService } from './services/country-catalog.service.js';
 
 @Module({
   imports: [HttpModule, SourcesModule, StatisticsModule, VisaProgramsModule],
   controllers: [CountriesController],
-  providers: [CountriesService, CountryDetailService],
+  providers: [CountriesService, CountryCatalogService, CountryDetailService],
+  exports: [CountryCatalogService],
 })
 export class CountriesModule {}

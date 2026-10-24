@@ -20,6 +20,9 @@ npm run start:dev
 ```
 
 A API fica em `http://localhost:3000/api/v1`. O banco inicia vazio intencionalmente: não há seed sintético em produção. A fixture em `test/fixtures/` declara no próprio conteúdo que é exclusivamente de teste.
+No bootstrap, o serviço sincroniza de forma idempotente somente o catálogo
+mundial versionado de países; essa operação não cria releases nem observações
+estatísticas.
 
 ## API pública
 
