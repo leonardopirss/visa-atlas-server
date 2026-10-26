@@ -7,14 +7,12 @@ const config: Config = {
   extensionsToTreatAsEsm: ['.ts'],
   moduleNameMapper: { '^(\\.{1,2}/.*)\\.js$': '$1' },
   transform: {
-    '^.+\\.ts$': [
-      'ts-jest',
-      { tsconfig: 'tsconfig.json', useESM: true },
-    ],
+    '^.+\\.ts$': ['ts-jest', { tsconfig: 'tsconfig.json', useESM: true }],
   },
   collectCoverageFrom: ['src/**/*.ts', '!src/main.ts'],
   coverageDirectory: 'coverage',
   testEnvironment: 'node',
+  setupFiles: ['<rootDir>/test/setup-environment.ts'],
 };
 
 export default config;

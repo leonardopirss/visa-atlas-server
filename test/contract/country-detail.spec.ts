@@ -3,6 +3,7 @@ import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import { AppModule } from '../../src/app.module.js';
 import { configureApplication } from '../../src/bootstrap.js';
+import { CountryCatalogService } from '../../src/modules/countries/services/country-catalog.service.js';
 import { prisma, resetDatabase, seedPublishedFixture } from '../helpers/database.js';
 
 describe('public API contract: country detail and timeseries', () => {
@@ -80,5 +81,60 @@ describe('public API contract: country detail and timeseries', () => {
   it('returns 404 for an unknown ISO3 country', async () => {
     const response = await request(app.getHttpServer()).get('/api/v1/countries/ZZZ').expect(404);
     expect(response.body.code).toBe('RESOURCE_NOT_FOUND');
+  });
+
+  it.each(['RUS', 'CAN', 'AUS'])(
+    'returns 200 and unavailable data for known country %s',
+    async (iso3) => {
+      await app.get(CountryCatalogService).synchronize();
+
+      const response = await request(app.getHttpServer())
+        .get(`/api/v1/countries/${iso3}`)
+        .expect(200);
+
+      expect(response.body).toMatchObject({
+        country: { iso3 },
+        statistics: {
+          value: null,
+          dataStatus: 'UNAVAILABLE',
+          source: null,
+        },
+        classifications: [],
+        visaPrograms: [],
+        sources: [],
+      });
+    },
+  );
+
+  it('returns an empty timeseries for a known country without observations', async () => {
+    await app.get(CountryCatalogService).synchronize();
+
+    const response = await request(app.getHttpServer())
+      .get('/api/v1/countries/CAN/timeseries')
+      .expect(200);
+
+    expect(response.body).toMatchObject({
+      iso3: 'CAN',
+      comparisonGroupId: null,
+      points: [],
+    });
+  });
+
+  it('returns honest absence when the catalog exists but no release is published', async () => {
+    await resetDatabase();
+    await app.get(CountryCatalogService).synchronize();
+
+    const detail = await request(app.getHttpServer()).get('/api/v1/countries/RUS').expect(200);
+    expect(detail.body.statistics).toMatchObject({
+      value: null,
+      dataStatus: 'UNAVAILABLE',
+      period: '',
+      source: null,
+    });
+
+    const timeseries = await request(app.getHttpServer())
+      .get('/api/v1/countries/RUS/timeseries')
+      .expect(200);
+    expect(timeseries.body.points).toEqual([]);
   });
 });

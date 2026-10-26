@@ -99,5 +99,15 @@ describe('public API contract: defaults, countries and map', () => {
       code: 'VALIDATION_ERROR',
       correlationId: 'contract-test',
     });
+    expect(response.headers['cache-control']).toBe('no-store');
+  });
+
+  it('replaces an unsafe correlation id before reflecting it in headers or errors', async () => {
+    const response = await request(app.getHttpServer())
+      .get('/api/v1/stats/map?citizenship=invalid')
+      .set('x-correlation-id', 'contains spaces')
+      .expect(400);
+    expect(response.headers['x-correlation-id']).toMatch(/^[a-f0-9-]{36}$/);
+    expect(response.body.correlationId).toBe(response.headers['x-correlation-id']);
   });
 });

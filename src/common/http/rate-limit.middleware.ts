@@ -26,11 +26,14 @@ export class RateLimitMiddleware implements NestMiddleware {
     response.setHeader('RateLimit-Remaining', Math.max(0, limit - window.count));
     response.setHeader('RateLimit-Reset', Math.ceil(window.resetAt / 1000));
     if (window.count > limit) {
+      response.setHeader('Retry-After', Math.max(1, Math.ceil((window.resetAt - now) / 1000)));
+      response.setHeader('Cache-Control', 'no-store');
       response.status(429).json({
         code: 'RATE_LIMIT_EXCEEDED',
         message: 'Too many requests',
         correlationId: String(response.locals.correlationId ?? 'unknown'),
       });
+      this.pruneExpired(now);
       return;
     }
     this.pruneExpired(now);

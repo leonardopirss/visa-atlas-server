@@ -17,9 +17,6 @@ export class ObservationValidator {
   }
 
   private validateOne(observation: StagedObservation): void {
-    if (observation.metricType !== MetricType.FIRST_RESIDENCE_PERMITS_GRANTED) {
-      throw new IngestionValidationError('METRIC_NOT_ALLOWED_FOR_EUROSTAT_MIGR_RESFIRST');
-    }
     if (observation.purpose !== VisaPurposeCode.WORK) {
       throw new IngestionValidationError('PURPOSE_INVALID');
     }
@@ -29,9 +26,7 @@ export class ObservationValidator {
     if (!/^\d{4}$/.test(observation.period)) {
       throw new IngestionValidationError('PERIOD_INVALID');
     }
-    if (observation.unit !== 'PER') {
-      throw new IngestionValidationError('UNIT_INVALID');
-    }
+    this.validateMetricScope(observation);
     if (!observation.sourceCategoryCode.trim()) {
       throw new IngestionValidationError('SOURCE_CATEGORY_MISSING');
     }
@@ -41,5 +36,27 @@ export class ObservationValidator {
     if (VALUE_STATUSES.has(observation.dataStatus) !== (observation.value !== null)) {
       throw new IngestionValidationError('VALUE_STATUS_MISMATCH');
     }
+  }
+
+  private validateMetricScope(observation: StagedObservation): void {
+    if (observation.metricType === MetricType.FIRST_RESIDENCE_PERMITS_GRANTED) {
+      if (observation.unit !== 'PER') {
+        throw new IngestionValidationError('UNIT_INVALID');
+      }
+      return;
+    }
+    if (observation.metricType === MetricType.WORK_VISAS_ISSUED) {
+      if (observation.destinationIso3 !== 'GBR' || observation.unit !== 'VISAS') {
+        throw new IngestionValidationError('UK_HOME_OFFICE_DIMENSIONS_INVALID');
+      }
+      return;
+    }
+    if (observation.metricType === MetricType.VALID_PERMIT_HOLDERS) {
+      if (observation.destinationIso3 !== 'CAN' || observation.unit !== 'HOLDERS') {
+        throw new IngestionValidationError('IRCC_CANADA_DIMENSIONS_INVALID');
+      }
+      return;
+    }
+    throw new IngestionValidationError('METRIC_NOT_ALLOWED_FOR_INGESTION');
   }
 }

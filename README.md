@@ -20,6 +20,9 @@ npm run start:dev
 ```
 
 A API fica em `http://localhost:3000/api/v1`. O banco inicia vazio intencionalmente: não há seed sintético em produção. A fixture em `test/fixtures/` declara no próprio conteúdo que é exclusivamente de teste.
+No bootstrap, o serviço sincroniza de forma idempotente somente o catálogo
+mundial versionado de países; essa operação não cria releases nem observações
+estatísticas.
 
 ## API pública
 
@@ -55,7 +58,12 @@ O job é interno, consulta a API Statistics do Eurostat com timeout e limite de 
 
 ## Qualidade
 
-Com PostgreSQL de teste disponível em `DATABASE_URL`:
+Os testes nunca usam o schema de desenvolvimento. Por padrão, os scripts
+derivam `public_test` de `DATABASE_URL`, aplicam as migrações nesse schema e
+recusam qualquer limpeza cujo nome do banco ou schema não contenha `test`. Para
+usar outro banco/schema isolado, configure `TEST_DATABASE_URL`.
+
+Com PostgreSQL disponível:
 
 ```bash
 npm run format:check
