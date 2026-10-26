@@ -165,6 +165,7 @@ model MetricObservation {
 
   @@unique([releaseId, destinationIso3, citizenshipIso3, purposeCode, metricType, sourceCategoryCode, period, unit])
   @@index([citizenshipIso3, purposeCode, period, metricType, comparisonGroupId])
+  @@index([comparisonGroupId, destinationIso3])
   @@index([destinationIso3, period])
   @@index([releaseId, sourceCategoryCode])
   @@map("metric_observations")

@@ -9,7 +9,21 @@ import {
 
 export const prisma = new PrismaClient();
 
+export function assertTestDatabaseUrl(databaseUrl: string | undefined): void {
+  if (!databaseUrl) throw new Error('DATABASE_URL is required for database tests');
+
+  const parsed = new URL(databaseUrl);
+  const databaseName = decodeURIComponent(parsed.pathname.replace(/^\//, ''));
+  const schema = parsed.searchParams.get('schema') ?? 'public';
+  if (!databaseName.toLowerCase().includes('test') && !schema.toLowerCase().includes('test')) {
+    throw new Error(
+      'Refusing to reset a database whose database name or schema is not marked as test',
+    );
+  }
+}
+
 export async function resetDatabase(): Promise<void> {
+  assertTestDatabaseUrl(process.env.DATABASE_URL);
   await prisma.$transaction([
     prisma.metricObservation.deleteMany(),
     prisma.ingestionJob.deleteMany(),

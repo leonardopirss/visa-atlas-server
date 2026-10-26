@@ -25,9 +25,14 @@ export class ApiExceptionFilter implements ExceptionFilter {
     const { status, body } = this.mapException(exception, correlationId);
 
     if (status >= 500) {
-      this.logger.error({ correlationId, exception });
+      this.logger.error({
+        event: 'http.request.failed',
+        correlationId,
+        errorType: exception instanceof Error ? exception.name : typeof exception,
+      });
     }
 
+    response.setHeader('Cache-Control', 'no-store');
     response.status(status).json(body);
   }
 

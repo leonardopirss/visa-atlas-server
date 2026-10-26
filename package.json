@@ -14,14 +14,15 @@
     "start": "node dist/main.js",
     "start:dev": "nest start --watch",
     "lint": "eslint .",
-    "format": "prettier --write \"{src,test,prisma}/**/*.{ts,json}\" \"*.{json,yml,yaml}\"",
-    "format:check": "prettier --check \"{src,test,prisma}/**/*.{ts,json}\" \"*.{json,yml,yaml}\"",
+    "format": "prettier --write \"{src,test,prisma}/**/*.{ts,json}\" \"scripts/**/*.{js,mjs}\" \"*.{json,yml,yaml}\"",
+    "format:check": "prettier --check \"{src,test,prisma}/**/*.{ts,json}\" \"scripts/**/*.{js,mjs}\" \"*.{json,yml,yaml}\"",
     "typecheck": "tsc --noEmit",
-    "test": "NODE_OPTIONS=--experimental-vm-modules jest --runInBand",
-    "test:unit": "NODE_OPTIONS=--experimental-vm-modules jest --runInBand --testPathIgnorePatterns=/test/",
-    "test:integration": "NODE_OPTIONS=--experimental-vm-modules jest --runInBand test/integration",
-    "test:contract": "NODE_OPTIONS=--experimental-vm-modules jest --runInBand test/contract",
-    "test:cov": "NODE_OPTIONS=--experimental-vm-modules jest --runInBand --coverage",
+    "test:prepare": "node --env-file-if-exists=.env scripts/prepare-test-database.mjs",
+    "test": "npm run test:prepare && node --env-file-if-exists=.env --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand",
+    "test:unit": "npm run test:prepare && node --env-file-if-exists=.env --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand test/unit",
+    "test:integration": "npm run test:prepare && node --env-file-if-exists=.env --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand test/integration",
+    "test:contract": "npm run test:prepare && node --env-file-if-exists=.env --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand test/contract",
+    "test:cov": "npm run test:prepare && node --env-file-if-exists=.env --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand --coverage",
     "contract:validate": "node scripts/validate-openapi.mjs",
     "ingest:eurostat": "npm run build && node dist/cli/ingest-eurostat.js",
     "prisma:generate": "prisma generate",
@@ -36,6 +37,7 @@
     "@prisma/client": "6.19.3",
     "class-transformer": "0.5.1",
     "class-validator": "0.14.2",
+    "fflate": "^0.8.3",
     "helmet": "8.1.0",
     "reflect-metadata": "0.2.2",
     "rxjs": "7.8.2"
@@ -61,6 +63,6 @@
     "ts-node": "10.9.2",
     "typescript": "5.9.3",
     "typescript-eslint": "8.48.1",
-    "yaml": "2.8.1"
+    "yaml": "^2.9.1"
   }
 }

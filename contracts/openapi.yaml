@@ -101,7 +101,7 @@ components:
     Iso3: { name: iso3, in: path, required: true, schema: { $ref: '#/components/schemas/Iso3' } }
     Citizenship: { name: citizenship, in: query, required: false, schema: { $ref: '#/components/schemas/Iso3', default: BRA } }
     Purpose: { name: purpose, in: query, required: false, schema: { type: string, enum: [WORK], default: WORK } }
-    YearOptional: { name: year, in: query, required: false, description: Na ausência, selecionar último ano comum validado, schema: { type: integer, minimum: 1900 } }
+    YearOptional: { name: year, in: query, required: false, description: 'Na ausência, selecionar último ano comum validado', schema: { type: integer, minimum: 1900 } }
     MetricType: { name: metricType, in: query, required: false, schema: { $ref: '#/components/schemas/MetricType' } }
     ComparisonGroupId: { name: comparisonGroupId, in: query, required: false, schema: { type: string, minLength: 1 } }
   responses:
