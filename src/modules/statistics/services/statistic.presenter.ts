@@ -49,3 +49,23 @@ export function presentStatistic(observation: ObservationView): Statistic {
     source: presentSource(observation),
   };
 }
+
+export function presentAggregateStatistic(observations: readonly ObservationView[]): Statistic {
+  const first = observations[0];
+  if (!first) throw new RangeError('Cannot present an empty observation aggregate');
+  const hasSuppressed = observations.some((observation) => observation.dataStatus === 'SUPPRESSED');
+  const hasUnavailable = observations.some((observation) => observation.value === null);
+  const value = hasUnavailable
+    ? null
+    : observations.reduce((total, observation) => total + (observation.value ?? 0n), 0n);
+  const dataStatus = hasSuppressed
+    ? 'SUPPRESSED'
+    : hasUnavailable
+      ? 'UNAVAILABLE'
+      : observations.some((observation) => observation.dataStatus === 'ESTIMATED')
+        ? 'ESTIMATED'
+        : observations.some((observation) => observation.dataStatus === 'REVISED')
+          ? 'REVISED'
+          : 'AVAILABLE';
+  return presentStatistic({ ...first, value, dataStatus });
+}

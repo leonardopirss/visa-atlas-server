@@ -4,7 +4,7 @@ import type { Statistic } from '../../common/contracts/public-api.types.js';
 import type { StatisticsQueryDto } from '../../common/dto/statistics-query.dto.js';
 import { PrismaService } from '../../common/database/prisma.service.js';
 import { DefaultFiltersService } from './services/default-filters.service.js';
-import { presentStatistic } from './services/statistic.presenter.js';
+import { presentAggregateStatistic } from './services/statistic.presenter.js';
 
 const OBSERVATION_INCLUDE = {
   release: { include: { dataset: { include: { organization: true } } } },
@@ -43,11 +43,11 @@ export class StatisticsService {
           include: OBSERVATION_INCLUDE,
         })
       : [];
-    const byCountry = new Map<string, (typeof observations)[number]>();
+    const byCountry = new Map<string, (typeof observations)[number][]>();
     for (const observation of observations) {
-      if (!byCountry.has(observation.destinationIso3)) {
-        byCountry.set(observation.destinationIso3, observation);
-      }
+      const current = byCountry.get(observation.destinationIso3) ?? [];
+      current.push(observation);
+      byCountry.set(observation.destinationIso3, current);
     }
 
     return {
@@ -59,7 +59,7 @@ export class StatisticsService {
         return {
           iso3,
           statistic: observation
-            ? presentStatistic(observation)
+            ? presentAggregateStatistic(observation)
             : this.unavailableStatistic(
                 filters.metricType,
                 filters.year,
@@ -68,9 +68,18 @@ export class StatisticsService {
               ),
         };
       }),
-      legendLabel:
-        'Primeiras autorizações de residência por trabalho; não representa vistos consulares',
+      legendLabel: this.legendLabel(filters.metricType),
     };
+  }
+
+  private legendLabel(metricType: StatisticsQueryDto['metricType']): string {
+    if (metricType === 'WORK_VISAS_ISSUED') {
+      return 'Vistos de trabalho emitidos; volume administrativo, não probabilidade';
+    }
+    if (metricType === 'VALID_PERMIT_HOLDERS') {
+      return 'Titulares brasileiros do IMP com permissão de trabalho válida em 31 de dezembro; valores arredondados pela fonte';
+    }
+    return 'Primeiras autorizações de residência por trabalho; não representa vistos consulares';
   }
 
   private unavailableStatistic(

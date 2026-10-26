@@ -6,7 +6,10 @@ import type { StatisticsQueryDto } from '../../../common/dto/statistics-query.dt
 import { ResourceNotFoundError } from '../../../common/errors/domain.error.js';
 import { SourcesService } from '../../sources/sources.service.js';
 import { DefaultFiltersService } from '../../statistics/services/default-filters.service.js';
-import { presentStatistic } from '../../statistics/services/statistic.presenter.js';
+import {
+  presentAggregateStatistic,
+  presentStatistic,
+} from '../../statistics/services/statistic.presenter.js';
 import { VisaProgramsService } from '../../visa-programs/visa-programs.service.js';
 
 const OBSERVATION_INCLUDE = {
@@ -45,7 +48,6 @@ export class CountryDetailService {
           orderBy: { sourceCategoryCode: 'asc' },
         })
       : [];
-    const total = observations[0];
     const programs = await this.visaPrograms.listVerified(iso3, query.purpose as VisaPurposeCode);
     await this.sources.verifiedLinks(iso3);
 
@@ -56,14 +58,15 @@ export class CountryDetailService {
         name: country.namePt,
         region: country.region,
       },
-      statistics: total
-        ? presentStatistic(total)
-        : this.unavailable(
-            filters.metricType,
-            filters.year,
-            filters.comparisonGroupId,
-            filters.unit,
-          ),
+      statistics:
+        observations.length > 0
+          ? presentAggregateStatistic(observations)
+          : this.unavailable(
+              filters.metricType,
+              filters.year,
+              filters.comparisonGroupId,
+              filters.unit,
+            ),
       classifications: observations.map((observation) => ({
         sourceCategoryCode: observation.sourceCategoryCode,
         label: observation.sourceCategoryLabel ?? observation.sourceCategoryCode,
