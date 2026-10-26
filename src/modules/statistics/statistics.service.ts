@@ -76,6 +76,9 @@ export class StatisticsService {
     if (metricType === 'WORK_VISAS_ISSUED') {
       return 'Vistos de trabalho emitidos; volume administrativo, não probabilidade';
     }
+    if (metricType === 'VALID_PERMIT_HOLDERS') {
+      return 'Titulares brasileiros do IMP com permissão de trabalho válida em 31 de dezembro; valores arredondados pela fonte';
+    }
     return 'Primeiras autorizações de residência por trabalho; não representa vistos consulares';
   }
 

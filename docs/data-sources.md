@@ -79,10 +79,30 @@ aba/cabeçalhos. Somente anos-calendário com Q1–Q4 presentes são publicados;
 parciais ou provisórios permanecem fora da API. O payload é identificado por
 checksum e promovido atomicamente, sem rota pública de ingestão.
 
+## Canadá — titulares IMP com permissão válida
+
+A fonte canadense é o recurso XLSX anual do
+[Immigration, Refugees and Citizenship Canada](https://open.canada.ca/data/en/dataset/360024f2-17e9-4558-bfc1-3616485d65b9),
+“International Mobility Program (IMP) work permit holders (for work purposes
+only) on December 31st by country of citizenship”, sob a
+[Open Government Licence — Canada 2.0](https://open.canada.ca/en/open-government-licence-canada).
+
+O adaptador importa somente a linha `Brazil`, uma observação por ano, com
+`metricType=VALID_PERMIT_HOLDERS`, `unit=HOLDERS` e categoria `IMP`. O valor é o
+estoque de titulares do IMP com permissão de trabalho válida em 31 de dezembro;
+não é emissão anual, visto, aplicação, taxa ou probabilidade. Os valores
+publicados são arredondados ao múltiplo de cinco e `--` é preservado como
+`SUPPRESSED` com valor nulo.
+
+O TFWP não é ingerido nem somado ao IMP. Consequentemente, a observação não deve
+ser rotulada como total de trabalhadores ou permissões do Canadá. Dataset,
+release e grupo de comparação são próprios e incompatíveis com Eurostat e Home
+Office.
+
 ## Licença e atualização
 
 O registro da organização identifica a política de reutilização da Comissão
 Europeia (Decision 2011/833/EU). A API do Eurostat disponibiliza apenas o estado
 mais recente; por isso o backend preserva cada payload obtido por checksum e
 publica releases próprias de forma atômica. O mesmo versionamento por checksum
-e promoção atômica é aplicado ao Home Office.
+e promoção atômica é aplicado ao Home Office e ao IRCC.

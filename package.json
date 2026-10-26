@@ -7,7 +7,8 @@
     "node": ">=24 <27"
   },
   "overrides": {
-    "deepmerge-ts": "8.0.2"
+    "deepmerge-ts": "8.0.2",
+    "multer": "2.5.0"
   },
   "scripts": {
     "build": "nest build",
@@ -25,6 +26,7 @@
     "test:cov": "npm run test:prepare && node --env-file-if-exists=.env --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand --coverage",
     "contract:validate": "node scripts/validate-openapi.mjs",
     "ingest:eurostat": "npm run build && node dist/cli/ingest-eurostat.js",
+    "ingest:ircc-canada": "npm run build && node dist/cli/ingest-ircc-canada.js",
     "ingest:uk-home-office": "npm run build && node dist/cli/ingest-uk-home-office.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate deploy"
