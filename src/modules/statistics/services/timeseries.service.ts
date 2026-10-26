@@ -6,7 +6,7 @@ import {
   IncompatibleDimensionsError,
   ResourceNotFoundError,
 } from '../../../common/errors/domain.error.js';
-import { presentStatistic } from './statistic.presenter.js';
+import { presentAggregateStatistic } from './statistic.presenter.js';
 
 const OBSERVATION_INCLUDE = {
   release: { include: { dataset: { include: { organization: true } } } },
@@ -87,15 +87,12 @@ export class TimeseriesService {
       purpose: query.purpose,
       metricType: query.metricType,
       comparisonGroupId: query.comparisonGroupId ?? null,
-      points: observations
-        .filter(
-          (observation, index, all) =>
-            all.findIndex(({ period }) => period === observation.period) === index,
-        )
-        .map((observation) => ({
-          year: Number(observation.period),
-          statistic: presentStatistic(observation),
-        })),
+      points: [...new Set(observations.map(({ period }) => period))].map((period) => ({
+        year: Number(period),
+        statistic: presentAggregateStatistic(
+          observations.filter((observation) => observation.period === period),
+        ),
+      })),
     };
   }
 }

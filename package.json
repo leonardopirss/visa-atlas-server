@@ -25,6 +25,7 @@
     "test:cov": "npm run test:prepare && node --env-file-if-exists=.env --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand --coverage",
     "contract:validate": "node scripts/validate-openapi.mjs",
     "ingest:eurostat": "npm run build && node dist/cli/ingest-eurostat.js",
+    "ingest:uk-home-office": "npm run build && node dist/cli/ingest-uk-home-office.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate deploy"
   },

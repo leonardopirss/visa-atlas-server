@@ -56,9 +56,33 @@ com detalhamento de primeiras autorizações para atividades remuneradas. Ele n�
 é combinado com `migr_resfirst` nesta versão, evitando misturar universos ou
 somar categorias não comparáveis.
 
+## Reino Unido — vistos de trabalho patrocinado
+
+A primeira fonte nacional admitida é o UK Home Office, tabela oficial
+[`Occ_D02`](https://www.gov.uk/government/statistical-data-sets/immigration-system-statistics-data-tables),
+“Grants of entry clearance visas, by occupation, industry and nationality”, no
+arquivo SOC 2020. A publicação está sob a
+[Open Government Licence v3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/).
+
+O adaptador importa apenas `Nationality = Brazil`, os tipos `Worker` e
+`Temporary Worker`, e preserva cada `Visa type subgroup` no código e rótulo da
+classificação. O destino é `GBR`, a métrica é `WORK_VISAS_ISSUED`, a unidade é
+`VISAS` e o grupo de comparação é exclusivo do dataset `Occ_D02`. Dependentes,
+estudo, visita e família não fazem parte desta tabela. Os registros representam
+concessões associadas a Certificate of Sponsorship e não pessoas únicas, taxa
+de aprovação, permissões dentro do Reino Unido ou todos os vistos de trabalho.
+
+O cliente descobre o XLSX no índice oficial ou aceita um URL oficial fixado no
+runner interno. Ele aplica timeout, limite de 12 MiB, allowlist de host,
+validação de `content-type`, limite expandido do ZIP e validação explícita de
+aba/cabeçalhos. Somente anos-calendário com Q1–Q4 presentes são publicados; anos
+parciais ou provisórios permanecem fora da API. O payload é identificado por
+checksum e promovido atomicamente, sem rota pública de ingestão.
+
 ## Licença e atualização
 
 O registro da organização identifica a política de reutilização da Comissão
 Europeia (Decision 2011/833/EU). A API do Eurostat disponibiliza apenas o estado
 mais recente; por isso o backend preserva cada payload obtido por checksum e
-publica releases próprias de forma atômica.
+publica releases próprias de forma atômica. O mesmo versionamento por checksum
+e promoção atômica é aplicado ao Home Office.
