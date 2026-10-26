@@ -1,0 +1,13 @@
+{
+  "fixtureType": "synthetic-structural-only",
+  "sourceStructure": "IRCC annual IMP work-purpose holders on December 31 by citizenship",
+  "rows": [
+    [
+      "Canada – International Mobility Program (IMP) work permit holders (for work purposes only) on December 31st by country of citizenship, 2022 - 2024"
+    ],
+    [null],
+    ["Country of Citizenship", "2022", "2023", "2024"],
+    ["Argentina", "1,000", "1,100", "1,200"],
+    ["Brazil", "13,795", "16,485", "15,655"]
+  ]
+}

@@ -51,6 +51,12 @@ export class ObservationValidator {
       }
       return;
     }
+    if (observation.metricType === MetricType.VALID_PERMIT_HOLDERS) {
+      if (observation.destinationIso3 !== 'CAN' || observation.unit !== 'HOLDERS') {
+        throw new IngestionValidationError('IRCC_CANADA_DIMENSIONS_INVALID');
+      }
+      return;
+    }
     throw new IngestionValidationError('METRIC_NOT_ALLOWED_FOR_INGESTION');
   }
 }
