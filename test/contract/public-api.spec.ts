@@ -1,10 +1,25 @@
 import { readFile } from 'node:fs/promises';
-import { type INestApplication } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  type INestApplication,
+  MiddlewareConsumer,
+  Module,
+  type NestModule,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import { parse } from 'yaml';
 import { AppModule } from '../../src/app.module.js';
 import { configureApplication } from '../../src/bootstrap.js';
+import { CorrelationIdMiddleware } from '../../src/common/errors/correlation-id.middleware.js';
+import { RateLimitMiddleware } from '../../src/common/http/rate-limit.middleware.js';
+import { RateLimitPolicyRegistry } from '../../src/common/http/rate-limit.policy.js';
+import {
+  RATE_LIMIT_STORE,
+  type RateLimitStore,
+} from '../../src/common/http/redis-rate-limit.store.js';
 import { prisma, resetDatabase, seedPublishedFixture } from '../helpers/database.js';
 
 describe('public API contract: defaults, countries and map', () => {
@@ -90,6 +105,20 @@ describe('public API contract: defaults, countries and map', () => {
     );
   });
 
+  it('preserves body ordering, status, and cache headers across repeated responses', async () => {
+    const first = await request(app.getHttpServer())
+      .get('/api/v1/stats/map?purpose=WORK&citizenship=BRA')
+      .expect(200);
+    const repeated = await request(app.getHttpServer())
+      .get('/api/v1/stats/map?citizenship=BRA&purpose=WORK')
+      .expect(200);
+
+    expect(repeated.status).toBe(first.status);
+    expect(repeated.text).toBe(first.text);
+    expect(repeated.headers['content-type']).toBe(first.headers['content-type']);
+    expect(repeated.headers['cache-control']).toBe(first.headers['cache-control']);
+  });
+
   it('returns a typed validation error and correlation id', async () => {
     const response = await request(app.getHttpServer())
       .get('/api/v1/stats/map?citizenship=invalid')
@@ -109,5 +138,89 @@ describe('public API contract: defaults, countries and map', () => {
       .expect(400);
     expect(response.headers['x-correlation-id']).toMatch(/^[a-f0-9-]{36}$/);
     expect(response.body.correlationId).toBe(response.headers['x-correlation-id']);
+  });
+});
+
+@Controller('stats/map')
+class RateLimitContractController {
+  @Get()
+  get(): { ok: true } {
+    return { ok: true };
+  }
+}
+
+const rejectedStore: RateLimitStore = {
+  consume: () =>
+    Promise.resolve({
+      status: 'ok',
+      decision: {
+        allowed: false,
+        limit: 60,
+        remaining: 0,
+        resetAtMs: Date.now() + 30_000,
+        retryAfterMs: 30_000,
+        policy: 'heavy',
+      },
+    }),
+};
+
+@Module({
+  controllers: [RateLimitContractController],
+  providers: [
+    CorrelationIdMiddleware,
+    RateLimitMiddleware,
+    RateLimitPolicyRegistry,
+    {
+      provide: ConfigService,
+      useValue: new ConfigService({
+        RATE_LIMIT_ENABLED: true,
+        RATE_LIMIT_MODE: 'enforce',
+        RATE_LIMIT_MAX: 120,
+        RATE_LIMIT_HEAVY_MAX: 60,
+        RATE_LIMIT_DAILY_MAX: 1_000,
+      }),
+    },
+    { provide: RATE_LIMIT_STORE, useValue: rejectedStore },
+  ],
+})
+class RateLimitContractModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(CorrelationIdMiddleware, RateLimitMiddleware).forRoutes('{*path}');
+  }
+}
+
+describe('distributed rate limit HTTP contract', () => {
+  let app: INestApplication;
+
+  beforeAll(async () => {
+    const moduleRef = await Test.createTestingModule({
+      imports: [RateLimitContractModule],
+    }).compile();
+    app = moduleRef.createNestApplication();
+    await app.init();
+  });
+
+  afterAll(async () => app.close());
+
+  it('preserves status, body, Retry-After, and RateLimit headers', async () => {
+    const response = await request(app.getHttpServer())
+      .get('/stats/map')
+      .set('x-correlation-id', 'rate-limit-contract')
+      .expect(429);
+
+    expect(response.headers).toMatchObject({
+      'cache-control': 'no-store',
+      'ratelimit-limit': '60',
+      'ratelimit-remaining': '0',
+      'retry-after': '30',
+    });
+    expect(Number(response.headers['ratelimit-reset'])).toBeGreaterThan(
+      Math.floor(Date.now() / 1_000),
+    );
+    expect(response.body).toEqual({
+      code: 'RATE_LIMIT_EXCEEDED',
+      message: 'Too many requests',
+      correlationId: 'rate-limit-contract',
+    });
   });
 });

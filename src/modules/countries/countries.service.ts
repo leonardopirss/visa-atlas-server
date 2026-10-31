@@ -1,14 +1,32 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
+import { RedisCacheService } from '../../common/cache/redis-cache.service.js';
 import { PrismaService } from '../../common/database/prisma.service.js';
 import type { CountryDto } from '../../common/contracts/public-api.types.js';
 import type { ListCountriesQueryDto } from './dto/list-countries-query.dto.js';
 
 @Injectable()
 export class CountriesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Optional() private readonly cache?: RedisCacheService,
+  ) {}
 
-  async list(query: ListCountriesQueryDto) {
+  list(query: ListCountriesQueryDto) {
+    if (!this.cache) return this.loadList(query);
+    return this.cache.getOrLoad({
+      group: 'countries',
+      route: 'countries',
+      releaseVersion: 'country-catalog-v1',
+      query: {
+        ...query,
+        search: query.search?.trim().toLocaleLowerCase('pt-BR'),
+      },
+      load: () => this.loadList(query),
+    });
+  }
+
+  private async loadList(query: ListCountriesQueryDto) {
     const search = query.search?.trim();
     const where: Prisma.CountryWhereInput = search
       ? {

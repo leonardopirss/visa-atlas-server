@@ -94,7 +94,7 @@ Important flow properties:
 
 ```bash
 cp .env.example .env
-docker compose up -d postgres
+docker compose up -d postgres redis
 npm ci
 npm run prisma:generate
 npm run prisma:migrate
@@ -103,7 +103,7 @@ npm run start:dev
 
 The API will be available at `http://localhost:3000/api/v1`.
 
-Docker Compose starts only PostgreSQL and uses a persistent volume. At application startup, the versioned catalog of 249 countries is synchronized idempotently. Catalog synchronization does not create statistical data; run at least one [official ingestion job](#running-ingestion-jobs) to publish observations.
+Docker Compose starts PostgreSQL with a persistent volume and an ephemeral Redis suitable only for local development/testing. Redis integration remains disabled until `REDIS_ENABLED=true`; the existing HTTP behavior is unchanged while it is disabled. At application startup, the versioned catalog of 249 countries is synchronized idempotently. Catalog synchronization does not create statistical data; run at least one [official ingestion job](#running-ingestion-jobs) to publish observations.
 
 Basic checks:
 
@@ -128,16 +128,25 @@ npm start
 
 Copy `.env.example` to `.env`. The application validates its environment during startup.
 
-| Variable            | Required | Default                     | Description                                                    |
-| ------------------- | -------- | --------------------------- | -------------------------------------------------------------- |
-| `DATABASE_URL`      | yes      | —                           | PostgreSQL URL used by Prisma; must start with `postgresql://` |
-| `TEST_DATABASE_URL` | no       | derived from `DATABASE_URL` | Isolated test database or schema; its name must contain `test` |
-| `PORT`              | no       | `3000`                      | HTTP port; must be a positive integer                          |
-| `CORS_ORIGINS`      | no       | `http://localhost:5173`     | Comma-separated list of allowed origins                        |
-| `CACHE_TTL_SECONDS` | no       | `60`                        | HTTP cache TTL for successful responses                        |
-| `RATE_LIMIT_TTL_MS` | no       | `60000`                     | Rate-limit window in milliseconds                              |
-| `RATE_LIMIT_MAX`    | no       | `120`                       | Maximum requests per IP per window                             |
-| `OPENAPI_PATH`      | no       | `contracts/openapi.yaml`    | Contract checked by `npm run contract:validate`                |
+| Variable                          | Required     | Default                     | Description                                                    |
+| --------------------------------- | ------------ | --------------------------- | -------------------------------------------------------------- |
+| `DATABASE_URL`                    | yes          | —                           | PostgreSQL URL used by Prisma; must start with `postgresql://` |
+| `TEST_DATABASE_URL`               | no           | derived from `DATABASE_URL` | Isolated test database or schema; its name must contain `test` |
+| `PORT`                            | no           | `3000`                      | HTTP port; must be a positive integer                          |
+| `CORS_ORIGINS`                    | no           | `http://localhost:5173`     | Comma-separated list of allowed origins                        |
+| `CACHE_TTL_SECONDS`               | no           | `60`                        | HTTP cache TTL for successful responses                        |
+| `RATE_LIMIT_TTL_MS`               | no           | `60000`                     | Rate-limit window in milliseconds                              |
+| `RATE_LIMIT_MAX`                  | no           | `120`                       | Maximum requests per IP per window                             |
+| `REDIS_ENABLED`                   | no           | `false`                     | Enables the shared Redis foundation                            |
+| `REDIS_URL`                       | when enabled | —                           | Redis URL; production requires `rediss://`                     |
+| `REDIS_CONNECT_TIMEOUT_MS`        | no           | `1000`                      | Redis socket connection timeout                                |
+| `REDIS_COMMAND_TIMEOUT_MS`        | no           | `250`                       | Per-command deadline before controlled degradation             |
+| `REDIS_KEY_PREFIX`                | no           | `visa-atlas:<environment>`  | Environment-isolated Redis key prefix                          |
+| `REDIS_CIRCUIT_FAILURE_THRESHOLD` | no           | `5`                         | Consecutive failures before opening the circuit                |
+| `REDIS_CIRCUIT_RESET_MS`          | no           | `10000`                     | Delay before a half-open circuit probe                         |
+| `REDIS_RECONNECT_MAX_DELAY_MS`    | no           | `1000`                      | Maximum reconnect backoff delay                                |
+| `REDIS_RECONNECT_MAX_ATTEMPTS`    | no           | `3`                         | Reconnect attempts per connection cycle                        |
+| `OPENAPI_PATH`                    | no           | `contracts/openapi.yaml`    | Contract checked by `npm run contract:validate`                |
 
 Sanitized local example:
 
@@ -149,9 +158,19 @@ CORS_ORIGINS=http://localhost:5173
 CACHE_TTL_SECONDS=60
 RATE_LIMIT_TTL_MS=60000
 RATE_LIMIT_MAX=120
+REDIS_ENABLED=false
+REDIS_URL=redis://localhost:6379
+REDIS_CONNECT_TIMEOUT_MS=1000
+REDIS_COMMAND_TIMEOUT_MS=250
+REDIS_KEY_PREFIX=visa-atlas:development
+REDIS_CIRCUIT_FAILURE_THRESHOLD=5
+REDIS_CIRCUIT_RESET_MS=10000
+REDIS_RECONNECT_MAX_DELAY_MS=1000
+REDIS_RECONNECT_MAX_ATTEMPTS=3
 ```
 
 Never commit real `.env` files or reuse production databases, schemas, or credentials in tests.
+Remote/production Redis connections must use `rediss://`; store the URL in the deployment secret manager and never expose it to the browser.
 
 ## Public API
 

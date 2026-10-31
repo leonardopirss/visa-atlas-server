@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import type { Prisma, VisaPurposeCode } from '@prisma/client';
+import { RedisCacheService } from '../../../common/cache/redis-cache.service.js';
 import type { TimeseriesQueryDto } from '../../../common/dto/statistics-query.dto.js';
 import { PrismaService } from '../../../common/database/prisma.service.js';
 import {
@@ -7,6 +8,7 @@ import {
   ResourceNotFoundError,
 } from '../../../common/errors/domain.error.js';
 import { presentAggregateStatistic } from './statistic.presenter.js';
+import { PublishedReleaseVersionService } from './published-release-version.service.js';
 
 const OBSERVATION_INCLUDE = {
   release: { include: { dataset: { include: { organization: true } } } },
@@ -14,9 +16,25 @@ const OBSERVATION_INCLUDE = {
 
 @Injectable()
 export class TimeseriesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Optional() private readonly cache?: RedisCacheService,
+    @Optional() private readonly releaseVersion?: PublishedReleaseVersionService,
+  ) {}
 
   async get(iso3: string, query: TimeseriesQueryDto) {
+    if (!this.cache?.isEnabled || !this.releaseVersion) return this.load(iso3, query);
+    const version = await this.releaseVersion.current();
+    return this.cache.getOrLoad({
+      group: 'timeseries',
+      route: 'country-timeseries',
+      releaseVersion: version,
+      query: { iso3, ...query },
+      load: () => this.load(iso3, query),
+    });
+  }
+
+  private async load(iso3: string, query: TimeseriesQueryDto) {
     const country = await this.prisma.country.findUnique({ where: { iso3 } });
     if (!country) throw new ResourceNotFoundError('Country');
     if (
