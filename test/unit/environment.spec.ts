@@ -6,6 +6,12 @@ describe('environment validation', () => {
   it('keeps Redis disabled by default with bounded safe defaults', () => {
     expect(validateEnvironment({ DATABASE_URL })).toMatchObject({
       REDIS_ENABLED: false,
+      CACHE_ENABLED: false,
+      CACHE_DEFAULT_TTL_SECONDS: 900,
+      CACHE_MAX_ITEM_BYTES: 131_072,
+      CACHE_TTL_JITTER_PERCENT: 10,
+      CACHE_LOCK_TTL_MS: 2_000,
+      CACHE_LOCK_WAIT_MS: 250,
       REDIS_URL: null,
       REDIS_CONNECT_TIMEOUT_MS: 1_000,
       REDIS_COMMAND_TIMEOUT_MS: 250,
@@ -52,6 +58,18 @@ describe('environment validation', () => {
   it('requires a Redis URL when the integration is enabled', () => {
     expect(() => validateEnvironment({ DATABASE_URL, REDIS_ENABLED: 'true' })).toThrow(
       'REDIS_URL is required when REDIS_ENABLED is true',
+    );
+  });
+
+  it('requires Redis and validates bounds when response caching is enabled', () => {
+    expect(() => validateEnvironment({ DATABASE_URL, CACHE_ENABLED: 'true' })).toThrow(
+      'REDIS_ENABLED must be true when CACHE_ENABLED is true',
+    );
+    expect(() => validateEnvironment({ DATABASE_URL, CACHE_TTL_JITTER_PERCENT: '51' })).toThrow(
+      'CACHE_TTL_JITTER_PERCENT',
+    );
+    expect(() => validateEnvironment({ DATABASE_URL, CACHE_MAX_ITEM_BYTES: '0' })).toThrow(
+      'CACHE_MAX_ITEM_BYTES',
     );
   });
 

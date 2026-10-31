@@ -105,6 +105,20 @@ describe('public API contract: defaults, countries and map', () => {
     );
   });
 
+  it('preserves body ordering, status, and cache headers across repeated responses', async () => {
+    const first = await request(app.getHttpServer())
+      .get('/api/v1/stats/map?purpose=WORK&citizenship=BRA')
+      .expect(200);
+    const repeated = await request(app.getHttpServer())
+      .get('/api/v1/stats/map?citizenship=BRA&purpose=WORK')
+      .expect(200);
+
+    expect(repeated.status).toBe(first.status);
+    expect(repeated.text).toBe(first.text);
+    expect(repeated.headers['content-type']).toBe(first.headers['content-type']);
+    expect(repeated.headers['cache-control']).toBe(first.headers['cache-control']);
+  });
+
   it('returns a typed validation error and correlation id', async () => {
     const response = await request(app.getHttpServer())
       .get('/api/v1/stats/map?citizenship=invalid')

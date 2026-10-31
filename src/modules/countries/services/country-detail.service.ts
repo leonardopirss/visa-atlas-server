@@ -1,11 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import { DataStatus, type Prisma, type VisaPurposeCode } from '@prisma/client';
+import { RedisCacheService } from '../../../common/cache/redis-cache.service.js';
 import type { Statistic } from '../../../common/contracts/public-api.types.js';
 import { PrismaService } from '../../../common/database/prisma.service.js';
 import type { StatisticsQueryDto } from '../../../common/dto/statistics-query.dto.js';
 import { ResourceNotFoundError } from '../../../common/errors/domain.error.js';
 import { SourcesService } from '../../sources/sources.service.js';
 import { DefaultFiltersService } from '../../statistics/services/default-filters.service.js';
+import { PublishedReleaseVersionService } from '../../statistics/services/published-release-version.service.js';
 import {
   presentAggregateStatistic,
   presentStatistic,
@@ -23,9 +25,23 @@ export class CountryDetailService {
     private readonly defaults: DefaultFiltersService,
     private readonly visaPrograms: VisaProgramsService,
     private readonly sources: SourcesService,
+    @Optional() private readonly cache?: RedisCacheService,
+    @Optional() private readonly releaseVersion?: PublishedReleaseVersionService,
   ) {}
 
   async get(iso3: string, query: StatisticsQueryDto) {
+    if (!this.cache?.isEnabled || !this.releaseVersion) return this.load(iso3, query);
+    const version = await this.releaseVersion.current();
+    return this.cache.getOrLoad({
+      group: 'detail',
+      route: 'country-detail',
+      releaseVersion: version,
+      query: { iso3, ...query },
+      load: () => this.load(iso3, query),
+    });
+  }
+
+  private async load(iso3: string, query: StatisticsQueryDto) {
     const country = await this.prisma.country.findUnique({ where: { iso3 } });
     if (!country) throw new ResourceNotFoundError('Country');
     const filters = await this.defaults.resolve({

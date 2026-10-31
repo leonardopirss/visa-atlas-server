@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import type { MetricType, VisaPurposeCode } from '@prisma/client';
+import { RedisCacheService } from '../../../common/cache/redis-cache.service.js';
 import {
   DEFAULT_CITIZENSHIP,
   DEFAULT_METRIC_TYPE,
@@ -7,6 +8,7 @@ import {
 } from '../../../common/contracts/public-api.types.js';
 import { IncompatibleDimensionsError } from '../../../common/errors/domain.error.js';
 import { PrismaService } from '../../../common/database/prisma.service.js';
+import { PublishedReleaseVersionService } from './published-release-version.service.js';
 
 export interface ResolvedFilters {
   citizenship: string;
@@ -27,9 +29,25 @@ export interface FilterRequest {
 
 @Injectable()
 export class DefaultFiltersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Optional() private readonly cache?: RedisCacheService,
+    @Optional() private readonly releaseVersion?: PublishedReleaseVersionService,
+  ) {}
 
   async getDefaults(): Promise<ResolvedFilters & { dataAvailable: boolean }> {
+    if (!this.cache?.isEnabled || !this.releaseVersion) return this.loadDefaults();
+    const version = await this.releaseVersion.current();
+    return this.cache.getOrLoad({
+      group: 'defaults',
+      route: 'filter-defaults',
+      releaseVersion: version,
+      query: {},
+      load: () => this.loadDefaults(),
+    });
+  }
+
+  private async loadDefaults(): Promise<ResolvedFilters & { dataAvailable: boolean }> {
     const filters = await this.resolve({
       citizenship: DEFAULT_CITIZENSHIP,
       purpose: DEFAULT_PURPOSE,

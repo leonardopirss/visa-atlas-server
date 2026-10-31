@@ -6,6 +6,12 @@ interface Environment {
   PORT: number;
   CORS_ORIGINS: string;
   CACHE_TTL_SECONDS: number;
+  CACHE_ENABLED: boolean;
+  CACHE_DEFAULT_TTL_SECONDS: number;
+  CACHE_MAX_ITEM_BYTES: number;
+  CACHE_TTL_JITTER_PERCENT: number;
+  CACHE_LOCK_TTL_MS: number;
+  CACHE_LOCK_WAIT_MS: number;
   RATE_LIMIT_TTL_MS: number;
   RATE_LIMIT_MAX: number;
   RATE_LIMIT_ENABLED: boolean;
@@ -29,6 +35,14 @@ function positiveInteger(value: unknown, fallback: number, name: string): number
   const parsed = value === undefined ? fallback : Number(value);
   if (!Number.isInteger(parsed) || parsed <= 0)
     throw new Error(`${name} must be a positive integer`);
+  return parsed;
+}
+
+function percentage(value: unknown, fallback: number, name: string): number {
+  const parsed = value === undefined ? fallback : Number(value);
+  if (!Number.isInteger(parsed) || parsed < 0 || parsed > 50) {
+    throw new Error(`${name} must be an integer between 0 and 50`);
+  }
   return parsed;
 }
 
@@ -138,7 +152,11 @@ export function validateEnvironment(input: Record<string, unknown>): Environment
   }
   const environment = nodeEnvironment(input.NODE_ENV);
   const redisEnabled = booleanValue(input.REDIS_ENABLED, false, 'REDIS_ENABLED');
+  const cacheEnabled = booleanValue(input.CACHE_ENABLED, false, 'CACHE_ENABLED');
   const rateLimitEnabled = booleanValue(input.RATE_LIMIT_ENABLED, false, 'RATE_LIMIT_ENABLED');
+  if (cacheEnabled && !redisEnabled) {
+    throw new Error('REDIS_ENABLED must be true when CACHE_ENABLED is true');
+  }
   return {
     NODE_ENV: environment,
     DATABASE_URL: databaseUrl,
@@ -146,6 +164,24 @@ export function validateEnvironment(input: Record<string, unknown>): Environment
     CORS_ORIGINS:
       typeof input.CORS_ORIGINS === 'string' ? input.CORS_ORIGINS : 'http://localhost:5173',
     CACHE_TTL_SECONDS: positiveInteger(input.CACHE_TTL_SECONDS, 60, 'CACHE_TTL_SECONDS'),
+    CACHE_ENABLED: cacheEnabled,
+    CACHE_DEFAULT_TTL_SECONDS: positiveInteger(
+      input.CACHE_DEFAULT_TTL_SECONDS,
+      900,
+      'CACHE_DEFAULT_TTL_SECONDS',
+    ),
+    CACHE_MAX_ITEM_BYTES: positiveInteger(
+      input.CACHE_MAX_ITEM_BYTES,
+      131_072,
+      'CACHE_MAX_ITEM_BYTES',
+    ),
+    CACHE_TTL_JITTER_PERCENT: percentage(
+      input.CACHE_TTL_JITTER_PERCENT,
+      10,
+      'CACHE_TTL_JITTER_PERCENT',
+    ),
+    CACHE_LOCK_TTL_MS: positiveInteger(input.CACHE_LOCK_TTL_MS, 2_000, 'CACHE_LOCK_TTL_MS'),
+    CACHE_LOCK_WAIT_MS: positiveInteger(input.CACHE_LOCK_WAIT_MS, 250, 'CACHE_LOCK_WAIT_MS'),
     RATE_LIMIT_TTL_MS: positiveInteger(input.RATE_LIMIT_TTL_MS, 60_000, 'RATE_LIMIT_TTL_MS'),
     RATE_LIMIT_MAX: positiveInteger(input.RATE_LIMIT_MAX, 120, 'RATE_LIMIT_MAX'),
     RATE_LIMIT_ENABLED: rateLimitEnabled,

@@ -106,23 +106,23 @@
 
 ### Tests
 
-- [ ] T030 [P] [US2] Criar testes de canonicalização, hash estável, versão e isolamento por ambiente em `test/unit/cache-key.spec.ts`.
-- [ ] T031 [P] [US2] Criar testes de TTL com jitter, tamanho máximo, serialização e rejeição de erro em `test/unit/redis-cache.service.spec.ts`.
-- [ ] T032 [P] [US2] Criar testes de single-flight/lock curto, timeout e recuperação de lock órfão em `test/unit/cache-stampede.spec.ts`.
-- [ ] T033 [P] [US2] Criar teste de integração de hit/miss/expiração/falha Redis com PostgreSQL real em `test/integration/response-cache.spec.ts`.
-- [ ] T034 [P] [US2] Criar teste de integração de publicação e rollback sem dados antigos no namespace vigente em `test/integration/cache-release-version.spec.ts`.
-- [ ] T035 [P] [US2] Confirmar igualdade de corpo, ordenação, status e headers com e sem cache em `test/contract/public-api.spec.ts`.
+- [x] T030 [P] [US2] Criar testes de canonicalização, hash estável, versão e isolamento por ambiente em `test/unit/cache-key.spec.ts`.
+- [x] T031 [P] [US2] Criar testes de TTL com jitter, tamanho máximo, serialização e rejeição de erro em `test/unit/redis-cache.service.spec.ts`.
+- [x] T032 [P] [US2] Criar testes de single-flight/lock curto, timeout e recuperação de lock órfão em `test/unit/cache-stampede.spec.ts`.
+- [x] T033 [P] [US2] Criar teste de integração de hit/miss/expiração/falha Redis com PostgreSQL real em `test/integration/response-cache.spec.ts`.
+- [x] T034 [P] [US2] Criar teste de integração de publicação e rollback sem dados antigos no namespace vigente em `test/integration/cache-release-version.spec.ts`.
+- [x] T035 [P] [US2] Confirmar igualdade de corpo, ordenação, status e headers com e sem cache em `test/contract/public-api.spec.ts`.
 
 ### Implementation
 
-- [ ] T036 [US2] Implementar query canônica, hash e namespaces versionados em `src/common/cache/cache-key.ts`.
-- [ ] T037 [US2] Implementar get/set com TTL, jitter, limite de bytes e falha tratada como miss em `src/common/cache/redis-cache.service.ts`.
-- [ ] T038 [US2] Implementar proteção contra stampede com espera limitada e liberação segura em `src/common/cache/cache-stampede.service.ts`.
-- [ ] T039 [US2] Registrar serviços, tokens e feature flags em `src/common/cache/cache.module.ts`, `src/app.module.ts` e `src/config/environment.ts`.
-- [ ] T040 [US2] Integrar cache allow-listed em `src/modules/countries/countries.service.ts`, `src/modules/countries/services/country-detail.service.ts`, `src/modules/statistics/statistics.service.ts`, `src/modules/statistics/services/timeseries.service.ts` e `src/modules/statistics/services/default-filters.service.ts`.
-- [ ] T041 [US2] Expor identidade do release publicado para composição das chaves sem usar varredura Redis em `src/modules/statistics/services/published-release-version.service.ts` e módulos consumidores.
-- [ ] T042 [US2] Preservar política HTTP e adicionar ETag somente se aprovado no contrato em `src/common/http/cache-control.interceptor.ts`.
-- [ ] T043 [US2] Registrar hit, miss, bypass, oversize, erro, bytes e latência sem labels de alta cardinalidade em `src/common/cache/redis-cache.service.ts`.
+- [x] T036 [US2] Implementar query canônica, hash e namespaces versionados em `src/common/cache/cache-key.ts`.
+- [x] T037 [US2] Implementar get/set com TTL, jitter, limite de bytes e falha tratada como miss em `src/common/cache/redis-cache.service.ts`.
+- [x] T038 [US2] Implementar proteção contra stampede com espera limitada e liberação segura em `src/common/cache/cache-stampede.service.ts`.
+- [x] T039 [US2] Registrar serviços, tokens e feature flags em `src/common/cache/cache.module.ts`, `src/app.module.ts` e `src/config/environment.ts`.
+- [x] T040 [US2] Integrar cache allow-listed em `src/modules/countries/countries.service.ts`, `src/modules/countries/services/country-detail.service.ts`, `src/modules/statistics/statistics.service.ts`, `src/modules/statistics/services/timeseries.service.ts` e `src/modules/statistics/services/default-filters.service.ts`.
+- [x] T041 [US2] Expor identidade do release publicado para composição das chaves sem usar varredura Redis em `src/modules/statistics/services/published-release-version.service.ts` e módulos consumidores.
+- [x] T042 [US2] Preservar política HTTP e adicionar ETag somente se aprovado no contrato em `src/common/http/cache-control.interceptor.ts`.
+- [x] T043 [US2] Registrar hit, miss, bypass, oversize, erro, bytes e latência sem labels de alta cardinalidade em `src/common/cache/redis-cache.service.ts`.
 
 **Checkpoint D3:** somente respostas elegíveis entram no cache, hits evitam PostgreSQL e mudanças de release ficam visíveis imediatamente pelo novo namespace.
 

@@ -1,9 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import { DataStatus, type Prisma, type VisaPurposeCode } from '@prisma/client';
+import { RedisCacheService } from '../../common/cache/redis-cache.service.js';
 import type { Statistic } from '../../common/contracts/public-api.types.js';
 import type { StatisticsQueryDto } from '../../common/dto/statistics-query.dto.js';
 import { PrismaService } from '../../common/database/prisma.service.js';
 import { DefaultFiltersService } from './services/default-filters.service.js';
+import { PublishedReleaseVersionService } from './services/published-release-version.service.js';
 import { presentAggregateStatistic } from './services/statistic.presenter.js';
 
 const OBSERVATION_INCLUDE = {
@@ -15,9 +17,29 @@ export class StatisticsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly defaultFilters: DefaultFiltersService,
+    @Optional() private readonly cache?: RedisCacheService,
+    @Optional() private readonly releaseVersion?: PublishedReleaseVersionService,
   ) {}
 
   async getMap(query: StatisticsQueryDto): Promise<{
+    citizenship: string;
+    purpose: 'WORK';
+    year: number | null;
+    countries: Array<{ iso3: string; statistic: Statistic }>;
+    legendLabel: string;
+  }> {
+    if (!this.cache?.isEnabled || !this.releaseVersion) return this.loadMap(query);
+    const version = await this.releaseVersion.current();
+    return this.cache.getOrLoad({
+      group: 'map',
+      route: 'stats-map',
+      releaseVersion: version,
+      query,
+      load: () => this.loadMap(query),
+    });
+  }
+
+  private async loadMap(query: StatisticsQueryDto): Promise<{
     citizenship: string;
     purpose: 'WORK';
     year: number | null;
