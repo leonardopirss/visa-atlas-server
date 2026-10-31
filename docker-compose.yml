@@ -6,7 +6,7 @@ services:
       POSTGRES_USER: visa_atlas
       POSTGRES_PASSWORD: visa_atlas
     ports:
-      - '5432:5432'
+      - '127.0.0.1:5432:5432'
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U visa_atlas -d visa_atlas']
       interval: 5s
@@ -14,6 +14,9 @@ services:
       retries: 10
     volumes:
       - visa_atlas_postgres:/var/lib/postgresql/data
+    networks:
+      - backend
+      - devtools
 
   redis:
     image: redis:8.4-alpine@sha256:3e393dc9c57e628ebd5e0fc0bc4524f83632b6b873503d619e856af9322d4ef7
@@ -28,7 +31,7 @@ services:
       - --maxmemory-policy
       - volatile-lru
     ports:
-      - '6379:6379'
+      - '127.0.0.1:6379:6379'
     healthcheck:
       test: ['CMD', 'redis-cli', 'ping']
       interval: 5s
@@ -37,6 +40,95 @@ services:
     mem_limit: 320m
     tmpfs:
       - /data
+    networks:
+      - backend
+      - devtools
+
+  migrate:
+    build:
+      context: .
+      target: build
+    command: ['npx', 'prisma', 'migrate', 'deploy']
+    environment:
+      DATABASE_URL: postgresql://visa_atlas:visa_atlas@postgres:5432/visa_atlas?schema=public
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - backend
+
+  api-1: &api
+    build:
+      context: .
+      target: runtime
+    environment:
+      &api_environment # Local-only topology. Production keeps NODE_ENV=production and requires rediss://.
+      NODE_ENV: development
+      DATABASE_URL: postgresql://visa_atlas:visa_atlas@postgres:5432/visa_atlas?schema=public
+      PORT: 3000
+      CORS_ORIGINS: http://localhost:5173
+      TRUST_PROXY: uniquelocal
+      REDIS_ENABLED: 'true'
+      REDIS_URL: redis://redis:6379
+      REDIS_KEY_PREFIX: visa-atlas:local
+      CACHE_ENABLED: 'true'
+      RATE_LIMIT_ENABLED: 'true'
+      RATE_LIMIT_MODE: enforce
+      RATE_LIMIT_IDENTITY_SECRET: local-only-rate-limit-secret-change-me
+    expose:
+      - '3000'
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3000/api/v1/filters/defaults').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - backend
+
+  api-2:
+    <<: *api
+    environment:
+      <<: *api_environment
+
+  nginx:
+    image: nginx:1.28-alpine@sha256:a8b39bd9cf0f83869a2162827a0caf6137ddf759d50a171451b335cecc87d236
+    user: '101:101'
+    read_only: true
+    ports:
+      - '3000:8080'
+    volumes:
+      - ./deploy/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./deploy/nginx/conf.d:/etc/nginx/conf.d:ro
+    tmpfs:
+      - /tmp
+    depends_on:
+      api-1:
+        condition: service_healthy
+      api-2:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - backend
+      - edge
 
 volumes:
   visa_atlas_postgres:
+
+networks:
+  edge:
+  devtools:
+  backend:
+    internal: true

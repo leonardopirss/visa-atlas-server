@@ -25,6 +25,8 @@
     "test:contract": "npm run test:prepare && node --env-file-if-exists=.env --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand test/contract",
     "test:cov": "npm run test:prepare && node --env-file-if-exists=.env --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand --coverage",
     "contract:validate": "node scripts/validate-openapi.mjs",
+    "nginx:validate": "node scripts/validate-nginx.mjs",
+    "test:nginx": "NGINX_TEST_URL=http://127.0.0.1:3000 node --env-file-if-exists=.env --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand test/integration/nginx-load-balancing.spec.ts test/security/nginx-boundary.spec.ts",
     "ingest:eurostat": "npm run build && node dist/cli/ingest-eurostat.js",
     "ingest:ircc-canada": "npm run build && node dist/cli/ingest-ircc-canada.js",
     "ingest:uk-home-office": "npm run build && node dist/cli/ingest-uk-home-office.js",
