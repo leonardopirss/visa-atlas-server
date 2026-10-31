@@ -149,6 +149,8 @@ Redis Cloud Essentials Free was rejected for remote production use because its o
 
 ### Phase 4 — Nginx como reverse proxy e balanceador
 
+**Status:** completed on 2026-10-31; verification record in [quickstart.md](./quickstart.md).
+
 **Objetivo:** criar um único ponto de entrada endurecido e distribuir tráfego entre réplicas.
 
 - Criar configuração versionada com `upstream` para no mínimo duas instâncias NestJS.

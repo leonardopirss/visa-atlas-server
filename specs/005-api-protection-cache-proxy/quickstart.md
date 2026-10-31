@@ -172,6 +172,51 @@ Executed on 2026-10-31 with local PostgreSQL 17 and Redis 8.4:
 - HTTP contract test preserved `429`, `Retry-After`, `RateLimit-*`, `Cache-Control: no-store`, and the error body;
 - full Jest suite: 23 suites and 88 tests passed;
 - ESLint, TypeScript typecheck, production build, format check, and OpenAPI validation passed.
+
+## Phase 5 — Nginx boundary and two API replicas
+
+The local topology exposes `http://127.0.0.1:3000` through Nginx. `api-1` and `api-2` expose port 3000 only inside the internal `backend` Docker network and do not publish host ports. PostgreSQL and Redis are available to local development tools only through loopback bindings; the additional `devtools` network is local-only and must not be reproduced as a public production network.
+
+Start and verify the topology:
+
+```bash
+docker compose up -d --build
+npm run nginx:validate
+npm run test:nginx
+```
+
+`nginx:validate` checks Compose invariants and runs `nginx -t` as UID/GID 101 in an isolated container. `test:nginx` verifies round-robin distribution through structured logs, passive failover, upstream recovery, forwarding-header spoof attempts, rejected methods/bodies, oversized URI/headers, burst `429`, and private replica ports.
+
+### Boundary policy
+
+- Nginx accepts only `GET`, `HEAD`, and `OPTIONS`; other methods return `405`.
+- Bodies and transfer-encoded requests return `413`.
+- Per-IP limiting starts at 5 requests/second with burst 10; the virtual-host ceiling is 100 requests/second with burst 50. Both return `429`.
+- Incoming `X-Forwarded-For` and `X-Real-IP` are overwritten with the direct peer address. A bounded safe correlation ID is preserved; invalid values are replaced by Nginx's request ID.
+- Upstreams use round-robin, 32 keep-alive connections, bounded connect/read/send timeouts, two passive retries, `max_fails=2`, and `fail_timeout=5s`.
+- Nginx runs read-only as UID/GID 101 with temporary paths on tmpfs. Version tokens are disabled, internal upstream addresses remain only in logs, and sticky sessions/proxy caching are not enabled.
+
+### Local versus production TLS
+
+The checked-in Compose topology is explicitly `NODE_ENV=development`: Redis uses plaintext only on the private local Docker network and Nginx listens on HTTP port 8080 behind the host mapping. It is not a production deployment manifest.
+
+Production must use `NODE_ENV=production`, `rediss://` for Redis, and one of these approved TLS boundaries:
+
+1. Terminate TLS in Nginx with certificates supplied by the deployment secret store or an ACME-managed volume outside the repository; configure renewal and reload without replacing active connections.
+2. Terminate TLS in a managed load balancer immediately before Nginx, keep that hop on a private trusted network, restrict ingress to the load balancer, and use a deployment-specific trusted forwarded-protocol configuration.
+
+Private keys, certificate bundles, provider credentials, and real rate-limit secrets must never be committed or baked into images. In production, remove loopback database/Redis publications and the `devtools` network, expose only the TLS boundary, and keep the API replicas exclusively on the private backend network.
+
+### Phase 5 verification record
+
+Executed on 2026-10-31 with pinned Node 24 Alpine, Nginx 1.28 Alpine, PostgreSQL 17, and Redis 8.4 images:
+
+- Nginx syntax and all scripted topology invariants passed;
+- topology/security suite: 2 suites and 7 tests passed against the real Compose stack;
+- round-robin used both upstreams; stopping `api-1` did not interrupt requests, and the replica rejoined after recovery;
+- burst, method, body, URI/header, spoofing, and private-port checks passed;
+- existing suite: 28 suites and 106 tests passed; the 2 Nginx suites are intentionally gated behind `NGINX_TEST_URL` and were run separately;
+- ESLint, TypeScript typecheck, format check, production build, and OpenAPI validation passed.
 - production dependency audit reported zero vulnerabilities.
 
 ## Phase 4 — Redis response cache

@@ -136,21 +136,21 @@
 
 ### Tests
 
-- [ ] T044 [P] [US3] Criar script de validação sintática e invariantes da configuração Nginx em `scripts/validate-nginx.mjs`.
-- [ ] T045 [P] [US3] Criar teste de topologia para distribuição, falha passiva e recuperação de upstream em `test/integration/nginx-load-balancing.spec.ts`.
-- [ ] T046 [P] [US3] Criar casos de spoof de IP, método proibido, burst, URI/header grande e porta privada em `test/security/nginx-boundary.spec.ts`.
+- [x] T044 [P] [US3] Criar script de validação sintática e invariantes da configuração Nginx em `scripts/validate-nginx.mjs`.
+- [x] T045 [P] [US3] Criar teste de topologia para distribuição, falha passiva e recuperação de upstream em `test/integration/nginx-load-balancing.spec.ts`.
+- [x] T046 [P] [US3] Criar casos de spoof de IP, método proibido, burst, URI/header grande e porta privada em `test/security/nginx-boundary.spec.ts`.
 
 ### Implementation
 
-- [ ] T047 [US3] Criar configuração base com usuário não privilegiado, logs, limites e ocultação de versão em `deploy/nginx/nginx.conf`.
-- [ ] T048 [US3] Configurar upstream round-robin, keep-alive, timeouts e falha passiva em `deploy/nginx/conf.d/visa-atlas.conf`.
-- [ ] T049 [US3] Configurar `limit_req` por IP e virtual host, burst e resposta `429` em `deploy/nginx/conf.d/visa-atlas.conf`.
-- [ ] T050 [US3] Permitir somente métodos aprovados e limitar corpo, URI e headers em `deploy/nginx/conf.d/visa-atlas.conf`.
-- [ ] T051 [US3] Sobrescrever/propagar headers de proxy e correlation ID de forma controlada em `deploy/nginx/conf.d/visa-atlas.conf`.
-- [ ] T052 [US3] Adicionar imagem/configuração Nginx, Redis e duas réplicas API à topologia local em `docker-compose.yml` e criar `Dockerfile` para a API se necessário.
-- [ ] T053 [US3] Remover publicação externa das portas das réplicas e manter somente Nginx exposto em `docker-compose.yml`.
-- [ ] T054 [US3] Documentar terminação TLS, certificados, rede privada e diferenças entre desenvolvimento/produção em `specs/005-api-protection-cache-proxy/quickstart.md`.
-- [ ] T055 [US3] Adicionar `nginx:validate` e o teste de topologia aos scripts de verificação em `package.json`.
+- [x] T047 [US3] Criar configuração base com usuário não privilegiado, logs, limites e ocultação de versão em `deploy/nginx/nginx.conf`.
+- [x] T048 [US3] Configurar upstream round-robin, keep-alive, timeouts e falha passiva em `deploy/nginx/conf.d/visa-atlas.conf`.
+- [x] T049 [US3] Configurar `limit_req` por IP e virtual host, burst e resposta `429` em `deploy/nginx/conf.d/visa-atlas.conf`.
+- [x] T050 [US3] Permitir somente métodos aprovados e limitar corpo, URI e headers em `deploy/nginx/conf.d/visa-atlas.conf`.
+- [x] T051 [US3] Sobrescrever/propagar headers de proxy e correlation ID de forma controlada em `deploy/nginx/conf.d/visa-atlas.conf`.
+- [x] T052 [US3] Adicionar imagem/configuração Nginx, Redis e duas réplicas API à topologia local em `docker-compose.yml` e criar `Dockerfile` para a API se necessário.
+- [x] T053 [US3] Remover publicação externa das portas das réplicas e manter somente Nginx exposto em `docker-compose.yml`.
+- [x] T054 [US3] Documentar terminação TLS, certificados, rede privada e diferenças entre desenvolvimento/produção em `specs/005-api-protection-cache-proxy/quickstart.md`.
+- [x] T055 [US3] Adicionar `nginx:validate` e o teste de topologia aos scripts de verificação em `package.json`.
 
 **Checkpoint D4:** Nginx é a única entrada pública, o IP real é confiável, bursts recebem `429` e a carga é distribuída sem sticky session.
 
