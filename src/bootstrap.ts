@@ -5,6 +5,13 @@ import { ApiExceptionFilter } from './common/errors/api-exception.filter.js';
 
 export function configureApplication(app: INestApplication): void {
   const config = app.get(ConfigService);
+  const trustProxy = config.get<string | false>('TRUST_PROXY', false);
+  if (trustProxy !== false) {
+    const instance = app.getHttpAdapter().getInstance() as {
+      set(name: string, value: string): void;
+    };
+    instance.set('trust proxy', trustProxy);
+  }
   const origins = config
     .get<string>('CORS_ORIGINS', 'http://localhost:5173')
     .split(',')
