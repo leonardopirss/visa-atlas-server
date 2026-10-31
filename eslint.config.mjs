@@ -11,6 +11,7 @@ export default tseslint.config(
       'coverage/**',
       'node_modules/**',
       'prisma/migrations/**',
+      'test/load/*.k6.js',
       'eslint.config.mjs',
     ],
   },

@@ -48,7 +48,6 @@ export const EUROSTAT_DESTINATIONS = {
   LI: { iso3: 'LIE', namePt: 'Liechtenstein' },
   NO: { iso3: 'NOR', namePt: 'Noruega' },
   CH: { iso3: 'CHE', namePt: 'Suíça' },
-  UK: { iso3: 'GBR', namePt: 'Reino Unido' },
   RS: { iso3: 'SRB', namePt: 'Sérvia' },
 } as const satisfies Readonly<Record<string, EurostatDestination>>;
 

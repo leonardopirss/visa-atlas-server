@@ -25,7 +25,9 @@ export class RateLimitMiddleware implements NestMiddleware {
       return;
     }
     const result = await this.store.consume(
-      request.ip ?? request.socket.remoteAddress ?? 'unknown',
+      typeof response.locals.clientIp === 'string'
+        ? response.locals.clientIp
+        : (request.ip ?? request.socket.remoteAddress ?? 'unknown'),
       this.policies.forRequest(request),
     );
     if (result.status === 'fallback') {

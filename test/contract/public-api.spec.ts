@@ -131,6 +131,16 @@ describe('public API contract: defaults, countries and map', () => {
     expect(response.headers['cache-control']).toBe('no-store');
   });
 
+  it.each([
+    '/api/v1/stats/map?year=2101',
+    '/api/v1/countries/ESP/timeseries?fromYear=1899',
+    '/api/v1/countries?pageSize=101',
+  ])('rejects a query outside the bounded public contract: %s', async (path) => {
+    const response = await request(app.getHttpServer()).get(path).expect(400);
+    expect(response.body.code).toBe('VALIDATION_ERROR');
+    expect(response.headers['cache-control']).toBe('no-store');
+  });
+
   it('replaces an unsafe correlation id before reflecting it in headers or errors', async () => {
     const response = await request(app.getHttpServer())
       .get('/api/v1/stats/map?citizenship=invalid')

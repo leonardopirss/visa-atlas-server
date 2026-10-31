@@ -34,19 +34,25 @@ A extração automatizada usa a
 [API Statistics](https://ec.europa.eu/eurostat/web/user-guides/data-browser/api-data-access/api-detailed-guidelines/api-statistics)
 em JSON-stat 2 e fixa as dimensões abaixo:
 
-| Dimensão Eurostat | Código | Uso interno |
-| --- | --- | --- |
-| `freq` | `A` | frequência anual |
-| `unit` | `PER` | pessoas, sem conversão |
-| `reason` | `EMP` | finalidade normalizada `WORK` |
-| `citizen` | `BR` | cidadania normalizada `BRA` |
-| `duration` | `TOTAL` | todas as durações |
-| `geo` | países reportantes | destino convertido de ISO2/Eurostat para ISO3 |
+| Dimensão Eurostat | Código             | Uso interno                                   |
+| ----------------- | ------------------ | --------------------------------------------- |
+| `freq`            | `A`                | frequência anual                              |
+| `unit`            | `PER`              | pessoas, sem conversão                        |
+| `reason`          | `EMP`              | finalidade normalizada `WORK`                 |
+| `citizen`         | `BR`               | cidadania normalizada `BRA`                   |
+| `duration`        | `TOTAL`            | todas as durações                             |
+| `geo`             | países reportantes | destino convertido de ISO2/Eurostat para ISO3 |
 
 A métrica publicada é `FIRST_RESIDENCE_PERMITS_GRANTED`. Ela não representa
 vistos consulares emitidos, pedidos recebidos nem probabilidade individual de
 aprovação. O código de categoria original `EMP`, release, período, unidade e
 fonte permanecem associados a cada observação.
+
+Para reutilização comercial, o recorte exclui o Reino Unido. A política de
+reutilização do Eurostat restringe dados de países fora da União Europeia,
+EFTA e candidatos oficiais; o destino `GBR` é coberto separadamente pelo
+dataset oficial `Occ_D02` do UK Home Office. A aplicação informa que o recorte
+foi filtrado e normalizado e exibe o disclaimer da adaptação.
 
 ## Fonte complementar não usada na métrica do MVP
 
@@ -106,3 +112,8 @@ Europeia (Decision 2011/833/EU). A API do Eurostat disponibiliza apenas o estado
 mais recente; por isso o backend preserva cada payload obtido por checksum e
 publica releases próprias de forma atômica. O mesmo versionamento por checksum
 e promoção atômica é aplicado ao Home Office e ao IRCC.
+
+O frontend publica uma auditoria de fontes e licenças acessível pelo rodapé,
+com data da última verificação, permissão comercial, atribuição, condições de
+reutilização e aviso de ausência de endosso governamental. A mesma auditoria
+documenta Natural Earth, `mledoze/countries` e Unicode CLDR.

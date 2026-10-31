@@ -20,3 +20,9 @@ export class IncompatibleDimensionsError extends DomainError {
     super('INCOMPATIBLE_DIMENSIONS', message, 422);
   }
 }
+
+export class DatabaseCapacityError extends DomainError {
+  constructor() {
+    super('DATABASE_CAPACITY_EXCEEDED', 'Service temporarily unavailable', 503);
+  }
+}

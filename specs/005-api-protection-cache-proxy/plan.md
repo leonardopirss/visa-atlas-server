@@ -169,6 +169,8 @@ Redis Cloud Essentials Free was rejected for remote production use because its o
 
 ### Phase 5 — Proteção do PostgreSQL e resiliência
 
+**Status:** completed on 2026-10-31; verification record in [quickstart.md](./quickstart.md).
+
 **Objetivo:** impedir que cache miss, Redis indisponível ou ataque transfira carga ilimitada ao banco.
 
 - Definir pool máximo por réplica considerando o limite total do PostgreSQL.
@@ -183,6 +185,8 @@ Redis Cloud Essentials Free was rejected for remote production use because its o
 
 ### Phase 6 — Testes funcionais, segurança e carga
 
+**Status:** completed locally on 2026-10-31; evidence in `quickstart.md`, `research.md`, and the operations runbook.
+
 **Objetivo:** provar comportamento integrado antes do rollout.
 
 - Unitários: chave canônica, TTL/jitter, política por endpoint, headers e fallback.
@@ -196,6 +200,8 @@ Redis Cloud Essentials Free was rejected for remote production use because its o
 **Exit gate:** SLOs definidos na Fase 0 atendidos, proteção do banco comprovada, nenhum bypass por réplica/IP encaminhado e rollback ensaiado.
 
 ### Phase 7 — Rollout gradual e operação
+
+**Status:** operational artifacts complete; managed smoke test, real rollout, and seven-day review remain externally gated (T077–T079).
 
 **Objetivo:** ativar com observabilidade e rollback simples.
 
@@ -283,7 +289,7 @@ visa-atlas-server/
 - [x] A implantação é incremental, testável e reversível.
 - [x] Testes integrados usam ambientes isolados, nunca produção.
 
-Gate revalidado em 2026-10-31 após seleção condicional de Upstash Free, GCRA/EVAL, node-redis, cache fail-open e rate limit fail-open protegido pelo Nginx. Revalidar novamente após o design implementado e antes do rollout.
+Gate revalidado em 2026-10-31 após implementação e qualificação integrada. PostgreSQL permaneceu fonte de verdade, Redis contém apenas dados efêmeros com TTL, as réplicas continuam privadas, falhas retornam contrato sanitizado e os rollbacks independentes foram ensaiados. A aprovação do destino continua obrigatória antes do rollout real.
 
 ## Success Criteria
 
@@ -297,6 +303,8 @@ Gate revalidado em 2026-10-31 após seleção condicional de Upstash Free, GCRA/
 - Publicação/rollback nunca serve release anterior sob o namespace vigente.
 - Alertas disparam em 70%, 85% e 95% da cota mensal do Redis gratuito, com decisão de upgrade até 85%.
 - O contrato HTTP dos cinco endpoints permanece compatível e o teste nominal possui zero `5xx` inesperado.
+
+Local evidence on 2026-10-31: Nginx was the only published API port; two replicas shared the limiter and cache; contract and security suites passed; warm-cache p95 was 38.42 ms, overall p99 was 452.17 ms, and unexpected `5xx` was zero. Cache-off, rate-limit fallback, and Nginx recovery were rehearsed. The 80% hit ratio/query-reduction and provider quota alerts require seven stable days in the authorized target environment and therefore remain rollout gates rather than claims from the synthetic local fixture.
 
 ## Risks and Mitigations
 

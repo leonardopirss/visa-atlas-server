@@ -4,6 +4,7 @@ import { RedisCacheService } from '../../common/cache/redis-cache.service.js';
 import type { Statistic } from '../../common/contracts/public-api.types.js';
 import type { StatisticsQueryDto } from '../../common/dto/statistics-query.dto.js';
 import { PrismaService } from '../../common/database/prisma.service.js';
+import { QueryConcurrencyService } from '../../common/database/query-concurrency.service.js';
 import { DefaultFiltersService } from './services/default-filters.service.js';
 import { PublishedReleaseVersionService } from './services/published-release-version.service.js';
 import { presentAggregateStatistic } from './services/statistic.presenter.js';
@@ -19,6 +20,7 @@ export class StatisticsService {
     private readonly defaultFilters: DefaultFiltersService,
     @Optional() private readonly cache?: RedisCacheService,
     @Optional() private readonly releaseVersion?: PublishedReleaseVersionService,
+    @Optional() private readonly queryConcurrency?: QueryConcurrencyService,
   ) {}
 
   async getMap(query: StatisticsQueryDto): Promise<{
@@ -28,15 +30,21 @@ export class StatisticsService {
     countries: Array<{ iso3: string; statistic: Statistic }>;
     legendLabel: string;
   }> {
-    if (!this.cache?.isEnabled || !this.releaseVersion) return this.loadMap(query);
+    if (!this.cache?.isEnabled || !this.releaseVersion) {
+      return this.runLoad(() => this.loadMap(query));
+    }
     const version = await this.releaseVersion.current();
     return this.cache.getOrLoad({
       group: 'map',
       route: 'stats-map',
       releaseVersion: version,
       query,
-      load: () => this.loadMap(query),
+      load: () => this.runLoad(() => this.loadMap(query)),
     });
+  }
+
+  private runLoad<T>(load: () => Promise<T>): Promise<T> {
+    return this.queryConcurrency ? this.queryConcurrency.run(load) : load();
   }
 
   private async loadMap(query: StatisticsQueryDto): Promise<{

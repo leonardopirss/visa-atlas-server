@@ -107,4 +107,30 @@ describe('critical query plans', () => {
       'metric_observations_comparison_group_id_destination_iso3_idx',
     );
   });
+
+  it('bounds the worst allowed country page before sorting the catalog', async () => {
+    const plan = await database.$queryRaw<Array<{ 'QUERY PLAN': string }>>(Prisma.sql`
+      EXPLAIN SELECT iso3, iso2, name_pt, region
+      FROM countries
+      WHERE name_pt ILIKE ${'%a%'}
+      ORDER BY name_pt ASC
+      LIMIT ${100}
+    `);
+    expect(plan.map((line) => line['QUERY PLAN']).join('\n')).toContain('Limit');
+  });
+
+  it('uses an observation index for the widest allowed timeseries interval', async () => {
+    const plan = await database.$transaction(async (transaction) => {
+      await transaction.$executeRaw`SET LOCAL enable_seqscan = off`;
+      return transaction.$queryRaw<Array<{ 'QUERY PLAN': string }>>(Prisma.sql`
+        EXPLAIN SELECT * FROM metric_observations
+        WHERE destination_iso3 = ${'ESP'}::char(3)
+          AND period BETWEEN ${'1900'} AND ${'2100'}
+        ORDER BY period ASC
+      `);
+    });
+    expect(plan.map((line) => line['QUERY PLAN']).join('\n')).toContain(
+      'metric_observations_destination_iso3_period_idx',
+    );
+  });
 });
