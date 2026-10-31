@@ -3,6 +3,7 @@ import type { Prisma, VisaPurposeCode } from '@prisma/client';
 import { RedisCacheService } from '../../../common/cache/redis-cache.service.js';
 import type { TimeseriesQueryDto } from '../../../common/dto/statistics-query.dto.js';
 import { PrismaService } from '../../../common/database/prisma.service.js';
+import { QueryConcurrencyService } from '../../../common/database/query-concurrency.service.js';
 import {
   IncompatibleDimensionsError,
   ResourceNotFoundError,
@@ -20,18 +21,25 @@ export class TimeseriesService {
     private readonly prisma: PrismaService,
     @Optional() private readonly cache?: RedisCacheService,
     @Optional() private readonly releaseVersion?: PublishedReleaseVersionService,
+    @Optional() private readonly queryConcurrency?: QueryConcurrencyService,
   ) {}
 
   async get(iso3: string, query: TimeseriesQueryDto) {
-    if (!this.cache?.isEnabled || !this.releaseVersion) return this.load(iso3, query);
+    if (!this.cache?.isEnabled || !this.releaseVersion) {
+      return this.runLoad(() => this.load(iso3, query));
+    }
     const version = await this.releaseVersion.current();
     return this.cache.getOrLoad({
       group: 'timeseries',
       route: 'country-timeseries',
       releaseVersion: version,
       query: { iso3, ...query },
-      load: () => this.load(iso3, query),
+      load: () => this.runLoad(() => this.load(iso3, query)),
     });
+  }
+
+  private runLoad<T>(load: () => Promise<T>): Promise<T> {
+    return this.queryConcurrency ? this.queryConcurrency.run(load) : load();
   }
 
   private async load(iso3: string, query: TimeseriesQueryDto) {

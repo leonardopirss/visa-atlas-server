@@ -9,6 +9,8 @@ import {
 import type { Response } from 'express';
 import { DomainError } from './domain.error.js';
 
+const DATABASE_UNAVAILABLE_CODES = new Set(['P1001', 'P1002', 'P1008', 'P2024']);
+
 interface ErrorBody {
   code: string;
   message: string;
@@ -61,10 +63,32 @@ export class ApiExceptionFilter implements ExceptionFilter {
       };
     }
 
+    if (this.isDatabaseUnavailable(exception)) {
+      return {
+        status: HttpStatus.SERVICE_UNAVAILABLE,
+        body: {
+          code: 'DATABASE_UNAVAILABLE',
+          message: 'Service temporarily unavailable',
+          correlationId,
+        },
+      };
+    }
+
     return {
       status: HttpStatus.INTERNAL_SERVER_ERROR,
       body: { code: 'INTERNAL_ERROR', message: 'Internal server error', correlationId },
     };
+  }
+
+  private isDatabaseUnavailable(exception: unknown): boolean {
+    if (!(exception instanceof Error)) return false;
+    const code = (exception as Error & { code?: unknown }).code;
+    if (typeof code === 'string' && DATABASE_UNAVAILABLE_CODES.has(code)) return true;
+    return (
+      exception.name === 'PrismaClientInitializationError' ||
+      (exception.name === 'PrismaClientUnknownRequestError' &&
+        exception.message.includes('statement timeout'))
+    );
   }
 
   private getSafeMessage(payload: unknown, fallback: string): string {

@@ -217,6 +217,48 @@ Executed on 2026-10-31 with pinned Node 24 Alpine, Nginx 1.28 Alpine, PostgreSQL
 - burst, method, body, URI/header, spoofing, and private-port checks passed;
 - existing suite: 28 suites and 106 tests passed; the 2 Nginx suites are intentionally gated behind `NGINX_TEST_URL` and were run separately;
 - ESLint, TypeScript typecheck, format check, production build, and OpenAPI validation passed.
+
+## Phase 6 — PostgreSQL safety and controlled degradation
+
+Each Prisma process receives explicit connection, acquisition, and statement budgets through the validated database URL. The initial two-replica topology uses:
+
+```dotenv
+DATABASE_POOL_MAX=5
+DATABASE_REPLICA_COUNT=2
+DATABASE_GLOBAL_CONNECTION_BUDGET=15
+DATABASE_POOL_TIMEOUT_MS=2000
+DATABASE_STATEMENT_TIMEOUT_MS=5000
+DATABASE_QUERY_CONCURRENCY=2
+DATABASE_QUERY_QUEUE_MAX=8
+DATABASE_QUERY_QUEUE_TIMEOUT_MS=250
+```
+
+Two replicas therefore reserve at most 10 pooled connections, leaving five connections in the declared budget for migration and operational access. Startup fails if `pool max × replica count` exceeds the global budget. Prisma's pool acquisition timeout is configured in whole seconds, rounded upward from the validated millisecond value; PostgreSQL receives `statement_timeout` through the connection options.
+
+Map, country-detail, and timeseries cache misses pass through a per-process concurrency gate. At most two expensive reads execute simultaneously; up to eight wait for 250 ms. A full or expired queue returns the sanitized response below and does not start more database work:
+
+```json
+{
+  "code": "DATABASE_CAPACITY_EXCEEDED",
+  "message": "Service temporarily unavailable",
+  "correlationId": "<request-correlation-id>"
+}
+```
+
+Prisma pool acquisition, connection, operation, and initialization timeouts map to `503 DATABASE_UNAVAILABLE` with the same safe message. Responses use `Cache-Control: no-store`, and internal connection/query details are not returned. No automatic retry is performed for expensive queries.
+
+Public request bounds remain page size 100 and search length 100. Statistic years and timeseries endpoints now accept only 1900–2100, while comparison-group IDs remain capped at 200 characters. The OpenAPI contract documents these limits and `503` responses.
+
+### Phase 6 verification record
+
+Executed on 2026-10-31 with PostgreSQL real and Redis deliberately unavailable for the degradation scenario:
+
+- Redis circuit opened while four concurrent map reads remained correct through PostgreSQL;
+- PostgreSQL confirmed `statement_timeout = 5s` on the real Prisma connection;
+- pool budget, acquisition timeout, queue bounds, immediate rejection, bounded queue wait, recovery, and sanitized Prisma timeout mapping passed;
+- query plans covered the maximum country page and the full allowed 1900–2100 timeseries interval using the expected observation index;
+- full Jest suite: 30 suites and 118 tests passed; 2 Nginx-gated suites/7 tests remain separate and had already passed against the real topology;
+- ESLint, TypeScript typecheck, format check, production build, OpenAPI validation, and Nginx validation passed.
 - production dependency audit reported zero vulnerabilities.
 
 ## Phase 4 — Redis response cache
@@ -225,13 +267,13 @@ The five public GET operations are explicitly allow-listed in their domain servi
 
 Initial policy:
 
-| Group | TTL | Maximum item |
-| --- | ---: | ---: |
-| defaults | 5 minutes | 16 KiB |
-| countries | 6 hours | 128 KiB |
-| map | 15 minutes | 128 KiB |
-| detail | 15 minutes | 128 KiB |
-| timeseries | 30 minutes | 128 KiB |
+| Group      |        TTL | Maximum item |
+| ---------- | ---------: | -----------: |
+| defaults   |  5 minutes |       16 KiB |
+| countries  |    6 hours |      128 KiB |
+| map        | 15 minutes |      128 KiB |
+| detail     | 15 minutes |      128 KiB |
+| timeseries | 30 minutes |      128 KiB |
 
 All TTLs receive 10% jitter. Only successfully returned DTOs are written; loader errors, invalid serialization, oversized values, timeouts, eviction, and Redis failures become misses and never replace PostgreSQL as the source of truth.
 
@@ -264,3 +306,33 @@ Executed on 2026-10-31 with local PostgreSQL 17 and Redis 8.4:
 - contract tests preserved response text/property ordering, status, content type, and `Cache-Control`; ETag was not added because the approved contract does not require it;
 - full Jest suite: 28 suites and 106 tests passed;
 - ESLint, TypeScript typecheck, production build, format check, and OpenAPI validation passed.
+
+## Phase 7 — Integrated qualification
+
+Executed on 2026-10-31 against the rebuilt Compose topology (Nginx, two API replicas, Redis 8.4 and PostgreSQL 17):
+
+```bash
+docker compose up -d --build
+REDIS_TEST_URL=redis://127.0.0.1:6379 npm test
+npm run test:nginx
+npm run lint
+npm run format:check
+npm run typecheck
+npm run build
+npm run contract:validate
+npm run nginx:validate
+docker run --rm --add-host host.docker.internal:host-gateway \
+  -e 'K6_SUMMARY_TREND_STATS=avg,min,med,p(90),p(95),p(99),max' \
+  -v "$PWD/test/load:/scripts:ro" \
+  grafana/k6:0.55.0@sha256:b24f418fc99a26dd57904c952c03bfaf79462be18508acc45aafa07ff68e7df2 \
+  run --quiet /scripts/api-protection.k6.js
+npm audit --omit=dev
+```
+
+The k6 qualification returned p50 29.02 ms, p95 101.97 ms, p99 452.17 ms and warm-cache p95 38.42 ms. All 152 HTTP checks passed, 22 requests were intentionally limited with `429`, and no unexpected `5xx` occurred. Redis memory increased by about 91 KiB in the measured run, evictions remained zero, and PostgreSQL reported three connections. Cache logs recorded 100 hits and 76 misses for the deliberately mixed cold/many-key/warm workload; the seven-day 80% hit-ratio gate remains a target-environment rollout criterion.
+
+The Redis keyspace test proved fixed-length HMAC identities, no raw IPs, mandatory positive TTLs, bounded memory growth, and cache-key expiration. Cache eligibility tests proved loader `4xx`/`5xx`, exceptions, and oversized responses are never written.
+
+The final gates passed: ESLint, Prettier, TypeScript, build, OpenAPI, Nginx validation, 32 PostgreSQL/Redis-backed Jest suites with 123 tests, and 2 separately gated Nginx suites with 7 topology-security tests. Production dependencies have zero known vulnerabilities; the full development tree has 3 low and 30 moderate advisories in build/test tooling, accepted temporarily because npm proposes incompatible major downgrades and none ship in the runtime image.
+
+Rollback commands and measured recovery times are in `docs/operations/api-protection-runbook.md`. The rehearsal also replaced the HTTP public-route healthcheck with a private TCP listener check so a legitimate `429` cannot evict a healthy replica.

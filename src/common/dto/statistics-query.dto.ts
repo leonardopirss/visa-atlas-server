@@ -7,6 +7,7 @@ import {
   IsOptional,
   IsString,
   Matches,
+  Max,
   MaxLength,
   Min,
 } from 'class-validator';
@@ -32,6 +33,7 @@ export class StatisticsQueryDto {
   @Type(() => Number)
   @IsInt()
   @Min(1900)
+  @Max(2100)
   year?: number;
 
   @IsOptional()
@@ -69,11 +71,13 @@ export class TimeseriesQueryDto {
   @Type(() => Number)
   @IsInt()
   @Min(1900)
+  @Max(2100)
   fromYear?: number;
 
   @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1900)
+  @Max(2100)
   toYear?: number;
 }

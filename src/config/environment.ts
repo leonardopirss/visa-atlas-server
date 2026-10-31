@@ -3,8 +3,19 @@ import { isIP } from 'node:net';
 interface Environment {
   NODE_ENV: 'development' | 'test' | 'production';
   DATABASE_URL: string;
+  DATABASE_POOL_MAX: number;
+  DATABASE_REPLICA_COUNT: number;
+  DATABASE_GLOBAL_CONNECTION_BUDGET: number;
+  DATABASE_POOL_TIMEOUT_MS: number;
+  DATABASE_STATEMENT_TIMEOUT_MS: number;
+  DATABASE_QUERY_CONCURRENCY: number;
+  DATABASE_QUERY_QUEUE_MAX: number;
+  DATABASE_QUERY_QUEUE_TIMEOUT_MS: number;
   PORT: number;
   CORS_ORIGINS: string;
+  CLOUDFLARE_ORIGIN_LOCK_ENABLED: boolean;
+  CLOUDFLARE_ALLOWED_HOSTS: string;
+  CLOUDFLARE_IP_RANGES: string;
   CACHE_TTL_SECONDS: number;
   CACHE_ENABLED: boolean;
   CACHE_DEFAULT_TTL_SECONDS: number;
@@ -31,10 +42,90 @@ interface Environment {
   REDIS_RECONNECT_MAX_ATTEMPTS: number;
 }
 
+function cloudflareOriginLock(
+  input: Record<string, unknown>,
+): Pick<
+  Environment,
+  'CLOUDFLARE_ORIGIN_LOCK_ENABLED' | 'CLOUDFLARE_ALLOWED_HOSTS' | 'CLOUDFLARE_IP_RANGES'
+> {
+  const enabled = booleanValue(
+    input.CLOUDFLARE_ORIGIN_LOCK_ENABLED,
+    false,
+    'CLOUDFLARE_ORIGIN_LOCK_ENABLED',
+  );
+  const hosts =
+    typeof input.CLOUDFLARE_ALLOWED_HOSTS === 'string'
+      ? input.CLOUDFLARE_ALLOWED_HOSTS.split(',')
+          .map((host) => host.trim().toLowerCase())
+          .filter(Boolean)
+      : [];
+  const ranges =
+    typeof input.CLOUDFLARE_IP_RANGES === 'string'
+      ? input.CLOUDFLARE_IP_RANGES.split(',')
+          .map((range) => range.trim())
+          .filter(Boolean)
+      : [];
+
+  if (enabled && hosts.length === 0) {
+    throw new Error('CLOUDFLARE_ALLOWED_HOSTS is required when origin lock is enabled');
+  }
+  if (
+    hosts.some(
+      (host) =>
+        host.length > 253 ||
+        !/^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)*[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(
+          host,
+        ),
+    )
+  ) {
+    throw new Error('CLOUDFLARE_ALLOWED_HOSTS must contain comma-separated hostnames');
+  }
+  if (enabled && ranges.length === 0) {
+    throw new Error('CLOUDFLARE_IP_RANGES is required when origin lock is enabled');
+  }
+  if (
+    ranges.some((range) => {
+      const [address, prefix, extra] = range.split('/');
+      const version = isIP(address ?? '');
+      const parsedPrefix = Number(prefix);
+      return (
+        version === 0 ||
+        prefix === undefined ||
+        extra !== undefined ||
+        !Number.isInteger(parsedPrefix) ||
+        parsedPrefix < 0 ||
+        parsedPrefix > (version === 4 ? 32 : 128)
+      );
+    })
+  ) {
+    throw new Error('CLOUDFLARE_IP_RANGES must contain valid comma-separated CIDR ranges');
+  }
+
+  return {
+    CLOUDFLARE_ORIGIN_LOCK_ENABLED: enabled,
+    CLOUDFLARE_ALLOWED_HOSTS: hosts.join(','),
+    CLOUDFLARE_IP_RANGES: ranges.join(','),
+  };
+}
+
 function positiveInteger(value: unknown, fallback: number, name: string): number {
   const parsed = value === undefined ? fallback : Number(value);
   if (!Number.isInteger(parsed) || parsed <= 0)
     throw new Error(`${name} must be a positive integer`);
+  return parsed;
+}
+
+function boundedInteger(
+  value: unknown,
+  fallback: number,
+  name: string,
+  minimum: number,
+  maximum: number,
+): number {
+  const parsed = value === undefined ? fallback : Number(value);
+  if (!Number.isInteger(parsed) || parsed < minimum || parsed > maximum) {
+    throw new Error(`${name} must be an integer between ${minimum} and ${maximum}`);
+  }
   return parsed;
 }
 
@@ -154,15 +245,75 @@ export function validateEnvironment(input: Record<string, unknown>): Environment
   const redisEnabled = booleanValue(input.REDIS_ENABLED, false, 'REDIS_ENABLED');
   const cacheEnabled = booleanValue(input.CACHE_ENABLED, false, 'CACHE_ENABLED');
   const rateLimitEnabled = booleanValue(input.RATE_LIMIT_ENABLED, false, 'RATE_LIMIT_ENABLED');
+  const originLock = cloudflareOriginLock(input);
+  const databasePoolMax = boundedInteger(input.DATABASE_POOL_MAX, 5, 'DATABASE_POOL_MAX', 1, 50);
+  const databaseReplicaCount = boundedInteger(
+    input.DATABASE_REPLICA_COUNT,
+    1,
+    'DATABASE_REPLICA_COUNT',
+    1,
+    20,
+  );
+  const databaseGlobalConnectionBudget = boundedInteger(
+    input.DATABASE_GLOBAL_CONNECTION_BUDGET,
+    20,
+    'DATABASE_GLOBAL_CONNECTION_BUDGET',
+    1,
+    500,
+  );
+  if (databasePoolMax * databaseReplicaCount > databaseGlobalConnectionBudget) {
+    throw new Error(
+      'DATABASE_POOL_MAX multiplied by DATABASE_REPLICA_COUNT exceeds DATABASE_GLOBAL_CONNECTION_BUDGET',
+    );
+  }
   if (cacheEnabled && !redisEnabled) {
     throw new Error('REDIS_ENABLED must be true when CACHE_ENABLED is true');
   }
   return {
     NODE_ENV: environment,
     DATABASE_URL: databaseUrl,
+    DATABASE_POOL_MAX: databasePoolMax,
+    DATABASE_REPLICA_COUNT: databaseReplicaCount,
+    DATABASE_GLOBAL_CONNECTION_BUDGET: databaseGlobalConnectionBudget,
+    DATABASE_POOL_TIMEOUT_MS: boundedInteger(
+      input.DATABASE_POOL_TIMEOUT_MS,
+      2_000,
+      'DATABASE_POOL_TIMEOUT_MS',
+      100,
+      30_000,
+    ),
+    DATABASE_STATEMENT_TIMEOUT_MS: boundedInteger(
+      input.DATABASE_STATEMENT_TIMEOUT_MS,
+      5_000,
+      'DATABASE_STATEMENT_TIMEOUT_MS',
+      100,
+      60_000,
+    ),
+    DATABASE_QUERY_CONCURRENCY: boundedInteger(
+      input.DATABASE_QUERY_CONCURRENCY,
+      2,
+      'DATABASE_QUERY_CONCURRENCY',
+      1,
+      50,
+    ),
+    DATABASE_QUERY_QUEUE_MAX: boundedInteger(
+      input.DATABASE_QUERY_QUEUE_MAX,
+      8,
+      'DATABASE_QUERY_QUEUE_MAX',
+      0,
+      1_000,
+    ),
+    DATABASE_QUERY_QUEUE_TIMEOUT_MS: boundedInteger(
+      input.DATABASE_QUERY_QUEUE_TIMEOUT_MS,
+      250,
+      'DATABASE_QUERY_QUEUE_TIMEOUT_MS',
+      10,
+      30_000,
+    ),
     PORT: positiveInteger(input.PORT, 3000, 'PORT'),
     CORS_ORIGINS:
       typeof input.CORS_ORIGINS === 'string' ? input.CORS_ORIGINS : 'http://localhost:5173',
+    ...originLock,
     CACHE_TTL_SECONDS: positiveInteger(input.CACHE_TTL_SECONDS, 60, 'CACHE_TTL_SECONDS'),
     CACHE_ENABLED: cacheEnabled,
     CACHE_DEFAULT_TTL_SECONDS: positiveInteger(

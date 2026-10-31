@@ -65,15 +65,23 @@ services:
       &api_environment # Local-only topology. Production keeps NODE_ENV=production and requires rediss://.
       NODE_ENV: development
       DATABASE_URL: postgresql://visa_atlas:visa_atlas@postgres:5432/visa_atlas?schema=public
+      DATABASE_POOL_MAX: 5
+      DATABASE_REPLICA_COUNT: 2
+      DATABASE_GLOBAL_CONNECTION_BUDGET: 15
+      DATABASE_POOL_TIMEOUT_MS: 2000
+      DATABASE_STATEMENT_TIMEOUT_MS: 5000
+      DATABASE_QUERY_CONCURRENCY: 2
+      DATABASE_QUERY_QUEUE_MAX: 8
+      DATABASE_QUERY_QUEUE_TIMEOUT_MS: 250
       PORT: 3000
       CORS_ORIGINS: http://localhost:5173
       TRUST_PROXY: uniquelocal
       REDIS_ENABLED: 'true'
       REDIS_URL: redis://redis:6379
       REDIS_KEY_PREFIX: visa-atlas:local
-      CACHE_ENABLED: 'true'
-      RATE_LIMIT_ENABLED: 'true'
-      RATE_LIMIT_MODE: enforce
+      CACHE_ENABLED: ${CACHE_ENABLED:-true}
+      RATE_LIMIT_ENABLED: ${RATE_LIMIT_ENABLED:-true}
+      RATE_LIMIT_MODE: ${RATE_LIMIT_MODE:-enforce}
       RATE_LIMIT_IDENTITY_SECRET: local-only-rate-limit-secret-change-me
     expose:
       - '3000'
@@ -88,7 +96,7 @@ services:
           'CMD',
           'node',
           '-e',
-          "fetch('http://127.0.0.1:3000/api/v1/filters/defaults').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+          "const s=require('node:net').connect(3000,'127.0.0.1',()=>{s.end();process.exit(0)});s.setTimeout(2000,()=>{s.destroy();process.exit(1)});s.on('error',()=>process.exit(1))",
         ]
       interval: 5s
       timeout: 3s

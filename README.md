@@ -134,6 +134,9 @@ Copy `.env.example` to `.env`. The application validates its environment during 
 | `TEST_DATABASE_URL`               | no           | derived from `DATABASE_URL` | Isolated test database or schema; its name must contain `test` |
 | `PORT`                            | no           | `3000`                      | HTTP port; must be a positive integer                          |
 | `CORS_ORIGINS`                    | no           | `http://localhost:5173`     | Comma-separated list of allowed origins                        |
+| `CLOUDFLARE_ORIGIN_LOCK_ENABLED`  | no           | `false`                     | Accept requests only through the configured Cloudflare edge    |
+| `CLOUDFLARE_ALLOWED_HOSTS`        | when locked  | —                           | Comma-separated public API hostnames                           |
+| `CLOUDFLARE_IP_RANGES`            | when locked  | —                           | Cloudflare IPv4/IPv6 CIDRs, comma-separated                    |
 | `CACHE_TTL_SECONDS`               | no           | `60`                        | HTTP cache TTL for successful responses                        |
 | `RATE_LIMIT_TTL_MS`               | no           | `60000`                     | Rate-limit window in milliseconds                              |
 | `RATE_LIMIT_MAX`                  | no           | `120`                       | Maximum requests per IP per window                             |
@@ -171,6 +174,20 @@ REDIS_RECONNECT_MAX_ATTEMPTS=3
 
 Never commit real `.env` files or reuse production databases, schemas, or credentials in tests.
 Remote/production Redis connections must use `rediss://`; store the URL in the deployment secret manager and never expose it to the browser.
+
+## Fly.io deployment through Cloudflare
+
+The production path is Cloudflare proxy/WAF → Fly.io → NestJS, with Supabase PostgreSQL and an external TLS Redis service. `fly.toml` declares the `visa-atlas-server` application in Amsterdam, colocated with the current Supabase region, and a TCP health check. The application-level origin lock rejects the public `*.fly.dev` hostname and traffic whose Fly-observed source address is outside the configured Cloudflare ranges.
+
+Before the first deployment:
+
+1. Add `FLY_API_TOKEN` and the Supabase session-pooler URL as `MIGRATION_DATABASE_URL` to the protected GitHub `production` environment.
+2. Set `DATABASE_URL`, `REDIS_URL`, `RATE_LIMIT_IDENTITY_SECRET`, and the remaining runtime configuration with `fly secrets set`.
+3. Until a custom domain exists, keep `CLOUDFLARE_ORIGIN_LOCK_ENABLED=false` and optionally set `API_SMOKE_URL=https://visa-atlas-server.fly.dev/api/v1/countries?pageSize=1` in the GitHub environment.
+4. After adding a domain, set `CLOUDFLARE_ORIGIN_LOCK_ENABLED=true`, the exact public hostname in `CLOUDFLARE_ALLOWED_HOSTS`, and the current values published at `https://www.cloudflare.com/ips-v4` and `https://www.cloudflare.com/ips-v6` in `CLOUDFLARE_IP_RANGES`.
+5. Add the custom API hostname to Fly, proxy its DNS record through Cloudflare, and select Cloudflare SSL/TLS mode **Full (strict)**.
+
+On a push to `main`, `.github/workflows/api.yml` waits for all validation gates, applies committed migrations once, deploys the Docker image, waits for the Fly health check, and runs the optional smoke test. Keep the GitHub production environment approval enabled when manual promotion is required.
 
 ## Public API
 

@@ -263,3 +263,31 @@ Gates antes de produção:
 - Redis Cloud regions: <https://redis.io/docs/latest/operate/rc/supported-regions/>
 - node-redis guide: <https://redis.io/docs/latest/develop/clients/nodejs/>
 - node-redis production usage: <https://redis.io/docs/latest/develop/clients/nodejs/produsage/>
+
+## 9. Integrated qualification results
+
+The final local qualification ran on 2026-10-31 through Nginx and two API replicas with Redis and PostgreSQL real. The k6 runner was pinned to `grafana/k6:0.55.0` digest `sha256:b24f418fc99a26dd57904c952c03bfaf79462be18508acc45aafa07ff68e7df2`.
+
+| Metric                                |        Final local result |                                Gate |
+| ------------------------------------- | ------------------------: | ----------------------------------: |
+| HTTP p50                              |                  29.02 ms |                         observation |
+| HTTP p95                              |                 101.97 ms |                         observation |
+| HTTP p99                              |                 452.17 ms |                            < 500 ms |
+| Warm-cache p95                        |                  38.42 ms |                            < 100 ms |
+| Expected `429`                        |                  22 / 152 |                    policy exercised |
+| Unexpected `5xx`                      |                   0 / 152 |                                   0 |
+| Cache events                          | 100 hit / 76 miss (56.8%) |   >= 80% after 7 stable target days |
+| PostgreSQL transactions, measured run |                       +77 | compare only with matching workload |
+| PostgreSQL connections                |        3 before / 3 after |                  <= declared budget |
+| Redis commands, measured run          |                    +1,720 |                  budget observation |
+| Redis memory, measured run            |       +93,272 B (~91 KiB) |              no uncontrolled growth |
+| Redis evictions                       |                         0 |                           0 nominal |
+
+The synthetic workload intentionally contains cold cache, many unique keys, and bursts, so its aggregate 56.8% application hit ratio is not the seven-day steady-state gate. Warm-cache latency passed. Redis keyspace counters also changed by +809 hits/+88 misses, but those figures include rate-limit and coordination commands and are not used as the application cache ratio. PostgreSQL `xact_commit` is recorded as a transaction proxy because `pg_stat_statements` was not enabled in the local image; integration tests separately prove a warm cache hit executes zero domain query.
+
+### Dependency and image audit
+
+- `npm audit --omit=dev`: 0 vulnerabilities across production dependencies.
+- Full tree: 3 low and 30 moderate advisories, all in development/build/test tooling (Jest, ESLint, Nest CLI and transitive glob/minimatch packages); no high or critical advisory.
+- Accepted risk: these packages are absent from the runtime image, and the automated fixes propose incompatible major downgrades. Reassess on the next toolchain upgrade rather than weakening the current build.
+- Runtime images remain pinned: Node 24 Alpine by digest in `Dockerfile`, Nginx 1.28 Alpine by digest, and Redis 8.4 Alpine by digest. PostgreSQL remains version-pinned to `17-alpine`; production deployment should pin its resolved digest in the environment manifest.

@@ -2,7 +2,7 @@
 
 **Input:** [plan.md](./plan.md)  
 **Feature:** `005-api-protection-cache-proxy`  
-**Status:** pronta para refinamento e execução após os gates da Fase 1
+**Status:** implementação e qualificação local concluídas; T077–T079 aguardam ambiente e autorização externos
 
 ## Format
 
@@ -164,17 +164,17 @@
 
 ### Tests
 
-- [ ] T056 [P] [US4] Criar testes de configuração de pool, timeout e orçamento global por réplica em `test/unit/database-safety.spec.ts`.
-- [ ] T057 [P] [US4] Criar teste de integração com Redis indisponível e PostgreSQL real em `test/integration/degraded-read-path.spec.ts`.
-- [ ] T058 [P] [US4] Criar teste de saturação/backpressure e resposta `503` segura em `test/integration/database-backpressure.spec.ts`.
-- [ ] T059 [P] [US4] Validar piores filtros permitidos e planos de execução em `test/performance/query-plans.spec.ts`.
+- [x] T056 [P] [US4] Criar testes de configuração de pool, timeout e orçamento global por réplica em `test/unit/database-safety.spec.ts`.
+- [x] T057 [P] [US4] Criar teste de integração com Redis indisponível e PostgreSQL real em `test/integration/degraded-read-path.spec.ts`.
+- [x] T058 [P] [US4] Criar teste de saturação/backpressure e resposta `503` segura em `test/integration/database-backpressure.spec.ts`.
+- [x] T059 [P] [US4] Validar piores filtros permitidos e planos de execução em `test/performance/query-plans.spec.ts`.
 
 ### Implementation
 
-- [ ] T060 [US4] Adicionar limites validados de pool, aquisição e statement timeout em `src/config/environment.ts` e `src/common/database/prisma.service.ts`.
-- [ ] T061 [US4] Implementar limite de concorrência para leituras caras em `src/common/database/query-concurrency.service.ts` e registrar em `src/common/database/database.module.ts`.
-- [ ] T062 [US4] Mapear saturação/timeout para erro `503` sanitizado em `src/common/errors/api-exception.filter.ts` e `src/common/errors/domain.error.ts`.
-- [ ] T063 [US4] Revisar paginação, intervalos e limites de resposta em `src/common/dto/statistics-query.dto.ts`, `src/modules/countries/dto/list-countries-query.dto.ts` e contrato OpenAPI compartilhado quando necessário.
+- [x] T060 [US4] Adicionar limites validados de pool, aquisição e statement timeout em `src/config/environment.ts` e `src/common/database/prisma.service.ts`.
+- [x] T061 [US4] Implementar limite de concorrência para leituras caras em `src/common/database/query-concurrency.service.ts` e registrar em `src/common/database/database.module.ts`.
+- [x] T062 [US4] Mapear saturação/timeout para erro `503` sanitizado em `src/common/errors/api-exception.filter.ts` e `src/common/errors/domain.error.ts`.
+- [x] T063 [US4] Revisar paginação, intervalos e limites de resposta em `src/common/dto/statistics-query.dto.ts`, `src/modules/countries/dto/list-countries-query.dto.ts` e contrato OpenAPI compartilhado quando necessário.
 
 **Checkpoint D5:** falhas de cache/Redis não geram tempestade de queries, o banco tem orçamento global e saturação falha rapidamente com resposta segura.
 
@@ -184,15 +184,15 @@
 
 **Purpose:** comprovar o conjunto completo antes de qualquer rollout.
 
-- [ ] T064 [P] Criar cenários cache frio, quente, hot key, muitas chaves, burst por IP, múltiplos IPs e Redis offline em `test/load/api-protection.k6.js` ou ferramenta aprovada na T006.
-- [ ] T065 [P] Criar teste de cardinalidade/memória de chaves e expiração obrigatória em `test/security/redis-keyspace.spec.ts`.
-- [ ] T066 [P] Criar teste de não-cache de `4xx`, `5xx`, exceções e respostas acima do limite em `test/security/cache-eligibility.spec.ts`.
-- [ ] T067 Executar teste integrado com Nginx, duas réplicas, Redis e PostgreSQL locais e registrar comandos/resultados em `specs/005-api-protection-cache-proxy/quickstart.md`.
-- [ ] T068 Comparar resultados de carga com o baseline/SLO da T003 e registrar p50/p95/p99, hit ratio, queries, conexões, `429` e `5xx` em `specs/005-api-protection-cache-proxy/research.md`.
-- [ ] T069 Executar `npm run lint`, `npm run format:check`, `npm run typecheck`, `npm test`, `npm run build` e `npm run contract:validate` e registrar resultados em `specs/005-api-protection-cache-proxy/quickstart.md`.
-- [ ] T070 Executar auditoria de dependências, revisar imagem Nginx/Redis fixada e documentar riscos aceitos em `specs/005-api-protection-cache-proxy/research.md`.
-- [ ] T071 Ensaiar rollback independente de cache, rate limit Redis e Nginx e registrar tempos/passos em `docs/operations/api-protection-runbook.md`.
-- [ ] T072 Revalidar Success Criteria e Constitution Check com evidências em `specs/005-api-protection-cache-proxy/plan.md`.
+- [x] T064 [P] Criar cenários cache frio, quente, hot key, muitas chaves, burst por IP, múltiplos IPs e Redis offline em `test/load/api-protection.k6.js` ou ferramenta aprovada na T006.
+- [x] T065 [P] Criar teste de cardinalidade/memória de chaves e expiração obrigatória em `test/security/redis-keyspace.spec.ts`.
+- [x] T066 [P] Criar teste de não-cache de `4xx`, `5xx`, exceções e respostas acima do limite em `test/security/cache-eligibility.spec.ts`.
+- [x] T067 Executar teste integrado com Nginx, duas réplicas, Redis e PostgreSQL locais e registrar comandos/resultados em `specs/005-api-protection-cache-proxy/quickstart.md`.
+- [x] T068 Comparar resultados de carga com o baseline/SLO da T003 e registrar p50/p95/p99, hit ratio, queries, conexões, `429` e `5xx` em `specs/005-api-protection-cache-proxy/research.md`.
+- [x] T069 Executar `npm run lint`, `npm run format:check`, `npm run typecheck`, `npm test`, `npm run build` e `npm run contract:validate` e registrar resultados em `specs/005-api-protection-cache-proxy/quickstart.md`.
+- [x] T070 Executar auditoria de dependências, revisar imagem Nginx/Redis fixada e documentar riscos aceitos em `specs/005-api-protection-cache-proxy/research.md`.
+- [x] T071 Ensaiar rollback independente de cache, rate limit Redis e Nginx e registrar tempos/passos em `docs/operations/api-protection-runbook.md`.
+- [x] T072 Revalidar Success Criteria e Constitution Check com evidências em `specs/005-api-protection-cache-proxy/plan.md`.
 
 **Checkpoint D6:** comportamento funcional, segurança, falhas, carga e rollback possuem evidência reproduzível e atendem aos SLOs aprovados.
 
@@ -202,10 +202,10 @@
 
 **Purpose:** ativar gradualmente, observar custo e deixar resposta operacional pronta.
 
-- [ ] T073 Criar runbook de Redis indisponível, cota esgotada, eviction anormal, cache inconsistente, upstream falho, rotação de credencial e rollback em `docs/operations/api-protection-runbook.md`.
-- [ ] T074 [P] Documentar dashboards e alertas para `429`, `5xx`, p95/p99, hit ratio, erros Redis, memória/comandos/evictions, queries e conexões em `docs/operations/api-protection-observability.md`.
-- [ ] T075 [P] Documentar alertas de 70%, 85% e 95% das cotas do provedor e ação correspondente em `docs/operations/api-protection-observability.md`.
-- [ ] T076 Criar checklist de rollout: conexão Redis inativa, rate limit observe, enforce, cache por endpoint, Nginx com uma réplica, múltiplas réplicas e bloqueio do acesso direto em `docs/operations/api-protection-rollout.md`.
+- [x] T073 Criar runbook de Redis indisponível, cota esgotada, eviction anormal, cache inconsistente, upstream falho, rotação de credencial e rollback em `docs/operations/api-protection-runbook.md`.
+- [x] T074 [P] Documentar dashboards e alertas para `429`, `5xx`, p95/p99, hit ratio, erros Redis, memória/comandos/evictions, queries e conexões em `docs/operations/api-protection-observability.md`.
+- [x] T075 [P] Documentar alertas de 70%, 85% e 95% das cotas do provedor e ação correspondente em `docs/operations/api-protection-observability.md`.
+- [x] T076 Criar checklist de rollout: conexão Redis inativa, rate limit observe, enforce, cache por endpoint, Nginx com uma réplica, múltiplas réplicas e bloqueio do acesso direto em `docs/operations/api-protection-rollout.md`.
 - [ ] T077 Executar smoke test pequeno no Redis gerenciado sem usar dados/credenciais de produção e registrar somente métricas sanitizadas em `docs/operations/api-protection-rollout.md`.
 - [ ] T078 Executar rollout gradual conforme T076, interrompendo automaticamente em regressão de SLO, contrato, erro ou cota, e registrar o resultado em `docs/operations/api-protection-rollout.md`.
 - [ ] T079 Revisar limites após o período de observação e versionar os valores aprovados em `src/config/environment.ts`, `.env.example` e `docs/operations/api-protection-rollout.md`.

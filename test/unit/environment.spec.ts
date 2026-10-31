@@ -26,7 +26,44 @@ describe('environment validation', () => {
       RATE_LIMIT_HEAVY_MAX: 60,
       RATE_LIMIT_DAILY_MAX: 1_000,
       TRUST_PROXY: false,
+      CLOUDFLARE_ORIGIN_LOCK_ENABLED: false,
     });
+  });
+
+  it('validates the Cloudflare origin lock configuration', () => {
+    expect(
+      validateEnvironment({
+        DATABASE_URL,
+        CLOUDFLARE_ORIGIN_LOCK_ENABLED: 'true',
+        CLOUDFLARE_ALLOWED_HOSTS: 'API.EXAMPLE.COM',
+        CLOUDFLARE_IP_RANGES: '173.245.48.0/20,2400:cb00::/32',
+      }),
+    ).toMatchObject({
+      CLOUDFLARE_ORIGIN_LOCK_ENABLED: true,
+      CLOUDFLARE_ALLOWED_HOSTS: 'api.example.com',
+    });
+  });
+
+  it.each([
+    [{ CLOUDFLARE_ORIGIN_LOCK_ENABLED: 'true' }, 'CLOUDFLARE_ALLOWED_HOSTS'],
+    [
+      {
+        CLOUDFLARE_ORIGIN_LOCK_ENABLED: 'true',
+        CLOUDFLARE_ALLOWED_HOSTS: 'https://api.example.com',
+        CLOUDFLARE_IP_RANGES: '173.245.48.0/20',
+      },
+      'CLOUDFLARE_ALLOWED_HOSTS',
+    ],
+    [
+      {
+        CLOUDFLARE_ORIGIN_LOCK_ENABLED: 'true',
+        CLOUDFLARE_ALLOWED_HOSTS: 'api.example.com',
+        CLOUDFLARE_IP_RANGES: '173.245.48.0/99',
+      },
+      'CLOUDFLARE_IP_RANGES',
+    ],
+  ])('rejects invalid Cloudflare origin lock configuration %#', (input, message) => {
+    expect(() => validateEnvironment({ DATABASE_URL, ...input })).toThrow(message);
   });
 
   it('validates distributed rate limit modes, secret, and explicit proxy trust', () => {
