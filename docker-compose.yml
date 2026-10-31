@@ -15,5 +15,28 @@ services:
     volumes:
       - visa_atlas_postgres:/var/lib/postgresql/data
 
+  redis:
+    image: redis:8.4-alpine@sha256:3e393dc9c57e628ebd5e0fc0bc4524f83632b6b873503d619e856af9322d4ef7
+    command:
+      - redis-server
+      - --save
+      - ''
+      - --appendonly
+      - 'no'
+      - --maxmemory
+      - 256mb
+      - --maxmemory-policy
+      - volatile-lru
+    ports:
+      - '6379:6379'
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    mem_limit: 320m
+    tmpfs:
+      - /data
+
 volumes:
   visa_atlas_postgres:

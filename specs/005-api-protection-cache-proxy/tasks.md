@@ -52,20 +52,20 @@
 
 ### Tests
 
-- [ ] T008 [P] Criar testes de validação das novas variáveis, defaults seguros e rejeição de configuração inválida em `test/unit/environment.spec.ts`.
-- [ ] T009 [P] Criar testes unitários de timeout, circuit breaker, reconexão e sanitização de erro em `test/unit/redis.service.spec.ts`.
-- [ ] T010 [P] Criar teste de integração de conexão, TTL e shutdown com Redis real em `test/integration/redis.spec.ts`.
+- [x] T008 [P] Criar testes de validação das novas variáveis, defaults seguros e rejeição de configuração inválida em `test/unit/environment.spec.ts`.
+- [x] T009 [P] Criar testes unitários de timeout, circuit breaker, reconexão e sanitização de erro em `test/unit/redis.service.spec.ts`.
+- [x] T010 [P] Criar teste de integração de conexão, TTL e shutdown com Redis real em `test/integration/redis.spec.ts`.
 
 ### Implementation
 
-- [ ] T011 Adicionar o cliente Redis aprovado e atualizar versões fixadas em `package.json` e `package-lock.json` (depende de T006).
-- [ ] T012 Adicionar Redis local com healthcheck, limite de memória e política de eviction de teste em `docker-compose.yml`.
-- [ ] T013 Adicionar configurações Redis, timeouts, prefixo por ambiente e feature flags em `src/config/environment.ts` e placeholders seguros em `.env.example`.
-- [ ] T014 Criar tipos/tokens de injeção independentes do SDK em `src/common/redis/redis.types.ts`.
-- [ ] T015 Implementar conexão única por processo, timeout, backoff, circuit breaker e shutdown em `src/common/redis/redis.service.ts`.
-- [ ] T016 Registrar e exportar a infraestrutura Redis em `src/common/redis/redis.module.ts` e `src/app.module.ts`.
-- [ ] T017 Adicionar logs estruturados e sanitizados de conexão, latência, timeout, erro e circuito em `src/common/redis/redis.service.ts`.
-- [ ] T018 Executar T008–T010 e validar início da aplicação com `REDIS_ENABLED=true` e `false`, registrando os comandos em `specs/005-api-protection-cache-proxy/quickstart.md`.
+- [x] T011 Adicionar o cliente Redis aprovado e atualizar versões fixadas em `package.json` e `package-lock.json` (depende de T006).
+- [x] T012 Adicionar Redis local com healthcheck, limite de memória e política de eviction de teste em `docker-compose.yml`.
+- [x] T013 Adicionar configurações Redis, timeouts, prefixo por ambiente e feature flags em `src/config/environment.ts` e placeholders seguros em `.env.example`.
+- [x] T014 Criar tipos/tokens de injeção independentes do SDK em `src/common/redis/redis.types.ts`.
+- [x] T015 Implementar conexão única por processo, timeout, backoff, circuit breaker e shutdown em `src/common/redis/redis.service.ts`.
+- [x] T016 Registrar e exportar a infraestrutura Redis em `src/common/redis/redis.module.ts` e `src/app.module.ts`.
+- [x] T017 Adicionar logs estruturados e sanitizados de conexão, latência, timeout, erro e circuito em `src/common/redis/redis.service.ts`.
+- [x] T018 Executar T008–T010 e validar início da aplicação com `REDIS_ENABLED=true` e `false`, registrando os comandos em `specs/005-api-protection-cache-proxy/quickstart.md`.
 
 **Checkpoint D1:** Redis pode ser habilitado/desabilitado, falha de forma conhecida, encerra corretamente e não muda respostas da API.
 
@@ -79,20 +79,20 @@
 
 ### Tests
 
-- [ ] T019 [P] [US1] Escrever testes unitários do algoritmo, fronteiras de janela, TTL, hash de chave e concorrência em `test/unit/redis-rate-limit.store.spec.ts`.
-- [ ] T020 [P] [US1] Atualizar testes do middleware para modos enforce, observe e fallback em `test/unit/rate-limit.middleware.spec.ts`.
-- [ ] T021 [P] [US1] Criar teste de integração concorrente com duas instâncias e um Redis em `test/integration/distributed-rate-limit.spec.ts`.
-- [ ] T022 [P] [US1] Preservar status, corpo, `Retry-After` e `RateLimit-*` em `test/contract/public-api.spec.ts`.
+- [x] T019 [P] [US1] Escrever testes unitários do algoritmo, fronteiras de janela, TTL, hash de chave e concorrência em `test/unit/redis-rate-limit.store.spec.ts`.
+- [x] T020 [P] [US1] Atualizar testes do middleware para modos enforce, observe e fallback em `test/unit/rate-limit.middleware.spec.ts`.
+- [x] T021 [P] [US1] Criar teste de integração concorrente com duas instâncias e um Redis em `test/integration/distributed-rate-limit.spec.ts`.
+- [x] T022 [P] [US1] Preservar status, corpo, `Retry-After` e `RateLimit-*` em `test/contract/public-api.spec.ts`.
 
 ### Implementation
 
-- [ ] T023 [US1] Criar contrato e store Redis atômico com TTL obrigatório em `src/common/http/redis-rate-limit.store.ts`.
-- [ ] T024 [US1] Criar políticas configuráveis por grupo de rota em `src/common/http/rate-limit.policy.ts`.
-- [ ] T025 [US1] Substituir o estado `Map` pela store injetada e implementar modos observe/enforce/fallback em `src/common/http/rate-limit.middleware.ts`.
-- [ ] T026 [US1] Resolver IP somente após configuração explícita de proxy confiável em `src/bootstrap.ts` e `src/config/environment.ts`.
-- [ ] T027 [US1] Garantir chaves compactas, com hash de identificador, namespace de ambiente e proteção contra cardinalidade em `src/common/http/redis-rate-limit.store.ts`.
-- [ ] T028 [US1] Registrar provider/políticas no módulo HTTP e composição de middlewares em `src/common/http/http.module.ts` e `src/app.module.ts`.
-- [ ] T029 [US1] Remover o fallback em memória da configuração final após T021 passar, mantendo rollback por feature flag documentado em `specs/005-api-protection-cache-proxy/quickstart.md`.
+- [x] T023 [US1] Criar contrato e store Redis atômico com TTL obrigatório em `src/common/http/redis-rate-limit.store.ts`.
+- [x] T024 [US1] Criar políticas configuráveis por grupo de rota em `src/common/http/rate-limit.policy.ts`.
+- [x] T025 [US1] Substituir o estado `Map` pela store injetada e implementar modos observe/enforce/fallback em `src/common/http/rate-limit.middleware.ts`.
+- [x] T026 [US1] Resolver IP somente após configuração explícita de proxy confiável em `src/bootstrap.ts` e `src/config/environment.ts`.
+- [x] T027 [US1] Garantir chaves compactas, com hash de identificador, namespace de ambiente e proteção contra cardinalidade em `src/common/http/redis-rate-limit.store.ts`.
+- [x] T028 [US1] Registrar provider/políticas no módulo HTTP e composição de middlewares em `src/common/http/http.module.ts` e `src/app.module.ts`.
+- [x] T029 [US1] Remover o fallback em memória da configuração final após T021 passar, mantendo rollback por feature flag documentado em `specs/005-api-protection-cache-proxy/quickstart.md`.
 
 **Checkpoint D2:** o limite é atômico e compartilhado, o contrato `429` permanece compatível e falha Redis segue a política aprovada.
 

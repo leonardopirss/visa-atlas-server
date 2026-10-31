@@ -100,6 +100,8 @@ Redis Cloud Essentials Free was rejected for remote production use because its o
 
 ### Phase 1 — Fundação Redis e configuração segura
 
+**Status:** completed on 2026-10-31; verification record in [quickstart.md](./quickstart.md).
+
 **Objetivo:** conectar Redis sem alterar ainda o comportamento HTTP.
 
 - Adicionar módulo Redis com uma única estratégia de conexão compartilhada por processo e encerramento limpo.
@@ -110,7 +112,7 @@ Redis Cloud Essentials Free was rejected for remote production use because its o
 - Separar liveness da dependência Redis; readiness deve indicar degradação de modo observável sem criar ciclo de reinício por uma falha opcional.
 - Testar conexão TLS/configuração, indisponibilidade, timeout, reconexão e shutdown.
 
-**Exit gate:** aplicação inicia com Redis habilitado e desabilitado, não vaza segredo, degrada de maneira conhecida e passa nos testes de integração.
+**Exit gate:** passed. Application starts with Redis enabled/disabled, credentials are sanitized, degradation is bounded, and the real Redis integration/full test suites pass.
 
 ### Phase 2 — Rate limiting distribuído
 
