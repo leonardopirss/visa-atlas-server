@@ -1,11 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import { ReleaseStatus } from '@prisma/client';
 import { PrismaService } from '../../../common/database/prisma.service.js';
+import { PublishedReleaseVersionService } from '../../statistics/services/published-release-version.service.js';
 import { IngestionValidationError } from '../validation/ingestion-validation.error.js';
 
 @Injectable()
 export class PublishReleaseService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Optional() private readonly releaseVersion?: PublishedReleaseVersionService,
+  ) {}
 
   async publish(releaseId: string): Promise<void> {
     await this.prisma.$transaction(async (transaction) => {
@@ -22,6 +26,7 @@ export class PublishReleaseService {
         data: { status: ReleaseStatus.PUBLISHED, publishedAt: new Date() },
       });
     });
+    await this.releaseVersion?.refresh();
   }
 
   async rollbackTo(releaseId: string): Promise<void> {
@@ -42,5 +47,6 @@ export class PublishReleaseService {
         data: { status: ReleaseStatus.PUBLISHED, publishedAt: new Date() },
       });
     });
+    await this.releaseVersion?.refresh();
   }
 }

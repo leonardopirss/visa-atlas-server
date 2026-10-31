@@ -173,3 +173,49 @@ Executed on 2026-10-31 with local PostgreSQL 17 and Redis 8.4:
 - full Jest suite: 23 suites and 88 tests passed;
 - ESLint, TypeScript typecheck, production build, format check, and OpenAPI validation passed.
 - production dependency audit reported zero vulnerabilities.
+
+## Phase 4 — Redis response cache
+
+The five public GET operations are explicitly allow-listed in their domain services. Cache keys contain the environment, API contract version, logical route, a fixed-length published-release version, and the hash of the canonical validated query. Raw query values are not placed in Redis keys.
+
+Initial policy:
+
+| Group | TTL | Maximum item |
+| --- | ---: | ---: |
+| defaults | 5 minutes | 16 KiB |
+| countries | 6 hours | 128 KiB |
+| map | 15 minutes | 128 KiB |
+| detail | 15 minutes | 128 KiB |
+| timeseries | 30 minutes | 128 KiB |
+
+All TTLs receive 10% jitter. Only successfully returned DTOs are written; loader errors, invalid serialization, oversized values, timeouts, eviction, and Redis failures become misses and never replace PostgreSQL as the source of truth.
+
+### Configuration and rollback
+
+Keep the cache disabled while deploying the code and Redis connection, then enable it independently:
+
+```dotenv
+REDIS_ENABLED=true
+CACHE_ENABLED=true
+CACHE_DEFAULT_TTL_SECONDS=900
+CACHE_MAX_ITEM_BYTES=131072
+CACHE_TTL_JITTER_PERCENT=10
+CACHE_LOCK_TTL_MS=2000
+CACHE_LOCK_WAIT_MS=250
+```
+
+`CACHE_ENABLED=true` is rejected unless Redis is also enabled. Roll back the cache path with `CACHE_ENABLED=false`; distributed rate limiting can remain enabled.
+
+Single-flight coalesces concurrent work inside one replica. A short Redis owner-token lock coordinates hot misses across replicas. Lock contention waits only for `CACHE_LOCK_WAIT_MS`; orphaned locks expire after `CACHE_LOCK_TTL_MS`, and release uses compare-and-delete so one owner cannot remove another owner's lock.
+
+Publishing or rolling back a dataset refreshes the shared published-release identity after the database transaction. New requests therefore use a new namespace immediately; old entries are not scanned or deleted and disappear through TTL/eviction.
+
+### Phase 4 verification record
+
+Executed on 2026-10-31 with local PostgreSQL 17 and Redis 8.4:
+
+- unit tests covered canonical queries, stable hashes, environment/version isolation, TTL jitter, size/serialization limits, loader errors, local single-flight, bounded distributed lock wait, orphan recovery, and safe owner-token release;
+- integration tests proved warm hits avoid domain queries, TTL expiration, Redis-offline fallback to PostgreSQL, and immediate namespace changes for publish and rollback;
+- contract tests preserved response text/property ordering, status, content type, and `Cache-Control`; ETag was not added because the approved contract does not require it;
+- full Jest suite: 28 suites and 106 tests passed;
+- ESLint, TypeScript typecheck, production build, format check, and OpenAPI validation passed.

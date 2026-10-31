@@ -131,6 +131,8 @@ Redis Cloud Essentials Free was rejected for remote production use because its o
 
 ### Phase 3 — Cache Redis das leituras públicas
 
+**Status:** completed on 2026-10-31; verification record in [quickstart.md](./quickstart.md).
+
 **Objetivo:** reduzir consultas repetidas ao PostgreSQL sem comprometer frescor ou correção.
 
 - Mapear TTL por categoria: catálogo relativamente estável, filtros/defaults, mapa agregado, detalhe e série histórica.
