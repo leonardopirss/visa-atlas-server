@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { DataStatus, ReleaseStatus } from '@prisma/client';
 import { PrismaService } from '../../src/common/database/prisma.service.js';
@@ -151,6 +152,39 @@ describe('Eurostat ingestion integration', () => {
         observations,
       }),
     ).rejects.toThrow('SOURCE_CATEGORY_MISSING');
+  });
+
+  it('records an operational failure without permanently rejecting the source checksum', async () => {
+    const observations = adapter
+      .parse(payload, adapterConfig)
+      .map((observation, index) =>
+        index === 0 ? { ...observation, destinationIso3: 'ZZZ' } : observation,
+      );
+    const failedRawPayload = `${rawPayload}-operational-failure`;
+
+    await expect(
+      ingestion.stage({
+        datasetId: 'migr-resfirst',
+        rawPayload: failedRawPayload,
+        fetchedAt: new Date('2026-10-20T00:00:00Z'),
+        sourcePublishedAt: null,
+        observations,
+      }),
+    ).rejects.toMatchObject({ code: 'P2003' });
+
+    expect(
+      await prisma.datasetRelease.findUnique({
+        where: {
+          datasetId_checksum: {
+            datasetId: 'migr-resfirst',
+            checksum: createHash('sha256').update(failedRawPayload).digest('hex'),
+          },
+        },
+      }),
+    ).toBeNull();
+    expect(await prisma.ingestionJob.findFirst({ orderBy: { startedAt: 'desc' } })).toMatchObject({
+      status: 'FAILED',
+    });
   });
 
   it('supports a logical rollback to a previously verified release', async () => {
