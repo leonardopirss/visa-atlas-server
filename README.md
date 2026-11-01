@@ -181,13 +181,14 @@ The production path is Cloudflare proxy/WAF → Fly.io → NestJS, with Supabase
 
 Before the first deployment:
 
-1. Add `FLY_API_TOKEN` and the Supabase session-pooler URL as `MIGRATION_DATABASE_URL` to the protected GitHub `production` environment.
+1. Add `FLY_API_TOKEN` to the protected GitHub `production` environment.
 2. Set `DATABASE_URL`, `REDIS_URL`, `RATE_LIMIT_IDENTITY_SECRET`, and the remaining runtime configuration with `fly secrets set`.
-3. Until a custom domain exists, keep `CLOUDFLARE_ORIGIN_LOCK_ENABLED=false` and optionally set `API_SMOKE_URL=https://visa-atlas-server.fly.dev/api/v1/countries?pageSize=1` in the GitHub environment.
-4. After adding a domain, set `CLOUDFLARE_ORIGIN_LOCK_ENABLED=true`, the exact public hostname in `CLOUDFLARE_ALLOWED_HOSTS`, and the current values published at `https://www.cloudflare.com/ips-v4` and `https://www.cloudflare.com/ips-v6` in `CLOUDFLARE_IP_RANGES`.
-5. Add the custom API hostname to Fly, proxy its DNS record through Cloudflare, and select Cloudflare SSL/TLS mode **Full (strict)**.
+3. Apply committed Prisma migrations through the separate database-release procedure before deploying code that depends on them.
+4. Until a custom domain exists, keep `CLOUDFLARE_ORIGIN_LOCK_ENABLED=false` and optionally set `API_SMOKE_URL=https://visa-atlas-server.fly.dev/api/v1/countries?pageSize=1` in the GitHub environment.
+5. After adding a domain, set `CLOUDFLARE_ORIGIN_LOCK_ENABLED=true`, the exact public hostname in `CLOUDFLARE_ALLOWED_HOSTS`, and the current values published at `https://www.cloudflare.com/ips-v4` and `https://www.cloudflare.com/ips-v6` in `CLOUDFLARE_IP_RANGES`.
+6. Add the custom API hostname to Fly, proxy its DNS record through Cloudflare, and select Cloudflare SSL/TLS mode **Full (strict)**.
 
-On a push to `main`, `.github/workflows/api.yml` waits for all validation gates, applies committed migrations once, deploys the Docker image, waits for the Fly health check, and runs the optional smoke test. Keep the GitHub production environment approval enabled when manual promotion is required.
+On a push to `main`, `.github/workflows/api.yml` waits for all validation gates, deploys the Docker image, waits for the Fly health check, and runs the optional smoke test. Database migrations are intentionally outside this deploy workflow. Keep the GitHub production environment approval enabled when manual promotion is required.
 
 ## Public API
 
