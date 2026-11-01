@@ -4,7 +4,11 @@ import { IngestionJobStatus, ReleaseStatus } from '@prisma/client';
 import { PrismaService } from '../../common/database/prisma.service.js';
 import type { StagedObservation } from './adapters/eurostat/eurostat.types.js';
 import { IngestionLogger } from './observability/ingestion-logger.service.js';
+import { IngestionValidationError } from './validation/ingestion-validation.error.js';
 import { ObservationValidator } from './validation/observation.validator.js';
+
+const INGESTION_TRANSACTION_MAX_WAIT_MS = 5_000;
+const INGESTION_TRANSACTION_TIMEOUT_MS = 60_000;
 
 export interface StageReleaseInput {
   datasetId: string;
@@ -47,21 +51,33 @@ export class IngestionService {
     try {
       this.validator.validate(input.observations);
       const observations = this.deduplicate(input.observations);
-      const release = await this.prisma.$transaction(async (transaction) => {
-        const stagedRelease = await transaction.datasetRelease.create({
-          data: {
-            datasetId: input.datasetId,
-            sourcePublishedAt: input.sourcePublishedAt,
-            fetchedAt: input.fetchedAt,
-            checksum,
-            status: ReleaseStatus.STAGING,
-          },
-        });
-        for (const observation of observations) {
-          const comparisonGroupId = this.comparisonGroupId(input.datasetId, observation);
-          await transaction.comparisonGroup.upsert({
-            where: { id: comparisonGroupId },
-            create: {
+      const release = await this.prisma.$transaction(
+        async (transaction) => {
+          const stagedRelease = await transaction.datasetRelease.create({
+            data: {
+              datasetId: input.datasetId,
+              sourcePublishedAt: input.sourcePublishedAt,
+              fetchedAt: input.fetchedAt,
+              checksum,
+              status: ReleaseStatus.STAGING,
+            },
+          });
+          const comparisonGroups = new Map<
+            string,
+            {
+              id: string;
+              datasetId: string;
+              metricType: StagedObservation['metricType'];
+              citizenshipIso3: string;
+              purposeCode: StagedObservation['purpose'];
+              period: string;
+              unit: string;
+              methodologyVersion: string;
+            }
+          >();
+          const metricObservations = observations.map((observation) => {
+            const comparisonGroupId = this.comparisonGroupId(input.datasetId, observation);
+            comparisonGroups.set(comparisonGroupId, {
               id: comparisonGroupId,
               datasetId: input.datasetId,
               metricType: observation.metricType,
@@ -70,11 +86,8 @@ export class IngestionService {
               period: observation.period,
               unit: observation.unit,
               methodologyVersion: observation.methodologyVersion,
-            },
-            update: {},
-          });
-          await transaction.metricObservation.create({
-            data: {
+            });
+            return {
               releaseId: stagedRelease.id,
               destinationIso3: observation.destinationIso3,
               citizenshipIso3: observation.citizenshipIso3,
@@ -87,18 +100,27 @@ export class IngestionService {
               value: observation.value,
               dataStatus: observation.dataStatus,
               comparisonGroupId,
+            };
+          });
+          await transaction.comparisonGroup.createMany({
+            data: [...comparisonGroups.values()],
+            skipDuplicates: true,
+          });
+          await transaction.metricObservation.createMany({ data: metricObservations });
+          return transaction.datasetRelease.update({
+            where: { id: stagedRelease.id },
+            data: {
+              status: ReleaseStatus.VERIFIED,
+              validatedAt: new Date(),
+              qualityReport: { observationCount: observations.length, validation: 'passed' },
             },
           });
-        }
-        return transaction.datasetRelease.update({
-          where: { id: stagedRelease.id },
-          data: {
-            status: ReleaseStatus.VERIFIED,
-            validatedAt: new Date(),
-            qualityReport: { observationCount: observations.length, validation: 'passed' },
-          },
-        });
-      });
+        },
+        {
+          maxWait: INGESTION_TRANSACTION_MAX_WAIT_MS,
+          timeout: INGESTION_TRANSACTION_TIMEOUT_MS,
+        },
+      );
       await this.prisma.ingestionJob.update({
         where: { id: job.id },
         data: {
@@ -119,18 +141,20 @@ export class IngestionService {
           report: { reason },
         },
       });
-      await this.prisma.datasetRelease.upsert({
-        where: { datasetId_checksum: { datasetId: input.datasetId, checksum } },
-        create: {
-          datasetId: input.datasetId,
-          sourcePublishedAt: input.sourcePublishedAt,
-          fetchedAt: input.fetchedAt,
-          checksum,
-          status: ReleaseStatus.REJECTED,
-          qualityReport: { reason },
-        },
-        update: {},
-      });
+      if (error instanceof IngestionValidationError) {
+        await this.prisma.datasetRelease.upsert({
+          where: { datasetId_checksum: { datasetId: input.datasetId, checksum } },
+          create: {
+            datasetId: input.datasetId,
+            sourcePublishedAt: input.sourcePublishedAt,
+            fetchedAt: input.fetchedAt,
+            checksum,
+            status: ReleaseStatus.REJECTED,
+            qualityReport: { reason },
+          },
+          update: {},
+        });
+      }
       this.logger.failed(job.id, reason);
       throw error;
     }
@@ -154,7 +178,7 @@ export class IngestionService {
         JSON.stringify(existing, this.bigIntReplacer) !==
           JSON.stringify(observation, this.bigIntReplacer)
       ) {
-        throw new Error(`Conflicting duplicate observation: ${key}`);
+        throw new IngestionValidationError(`CONFLICTING_DUPLICATE:${key}`);
       }
       unique.set(key, observation);
     }
