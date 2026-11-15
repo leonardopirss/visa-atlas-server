@@ -156,3 +156,125 @@ export async function seedPublishedFixture(): Promise<void> {
     ],
   });
 }
+
+export async function seedDestinationComparisonFixture(): Promise<void> {
+  await prisma.country.createMany({
+    data: [
+      { iso3: 'GBR', iso2: 'GB', namePt: 'Reino Unido', region: 'Europa' },
+      { iso3: 'CAN', iso2: 'CA', namePt: 'Canadá', region: 'Américas' },
+    ],
+    skipDuplicates: true,
+  });
+  await prisma.sourceOrganization.createMany({
+    data: [
+      {
+        id: 'uk-home-office-test',
+        name: 'UK Home Office',
+        homepageUrl: 'https://www.gov.uk/government/organisations/home-office',
+        license: 'Synthetic test fixture',
+      },
+      {
+        id: 'ircc-test',
+        name: 'Immigration, Refugees and Citizenship Canada',
+        homepageUrl: 'https://www.canada.ca/en/immigration-refugees-citizenship.html',
+        license: 'Synthetic test fixture',
+      },
+    ],
+  });
+  await prisma.sourceDataset.createMany({
+    data: [
+      {
+        id: 'uk-work-visas-test',
+        organizationId: 'uk-home-office-test',
+        code: 'Occ_D02_TEST',
+        url: 'https://www.gov.uk/government/statistical-data-sets/immigration-system-statistics-data-tables',
+        schemaVersion: 'synthetic-test-v1',
+      },
+      {
+        id: 'canada-imp-test',
+        organizationId: 'ircc-test',
+        code: 'IMP_CITZ_YEAR_END_WORK_TEST',
+        url: 'https://open.canada.ca/data/en/dataset',
+        schemaVersion: 'synthetic-test-v1',
+      },
+    ],
+  });
+  await prisma.comparisonGroup.createMany({
+    data: [
+      {
+        id: 'uk-work-visas-test-2025',
+        datasetId: 'uk-work-visas-test',
+        metricType: MetricType.WORK_VISAS_ISSUED,
+        citizenshipIso3: 'BRA',
+        purposeCode: VisaPurposeCode.WORK,
+        period: '2025',
+        unit: 'VISAS',
+        methodologyVersion: 'synthetic-test-v1',
+      },
+      {
+        id: 'canada-imp-test-2024',
+        datasetId: 'canada-imp-test',
+        metricType: MetricType.VALID_PERMIT_HOLDERS,
+        citizenshipIso3: 'BRA',
+        purposeCode: VisaPurposeCode.WORK,
+        period: '2024',
+        unit: 'HOLDERS',
+        methodologyVersion: 'synthetic-test-v1',
+      },
+    ],
+  });
+  await prisma.datasetRelease.create({
+    data: {
+      id: 'uk-test-release-2025',
+      datasetId: 'uk-work-visas-test',
+      sourcePublishedAt: new Date('2026-01-20T00:00:00Z'),
+      fetchedAt: new Date('2026-10-19T00:00:00Z'),
+      validatedAt: new Date('2026-10-19T00:00:00Z'),
+      publishedAt: new Date('2026-10-19T00:00:00Z'),
+      checksum: 'synthetic-uk-comparison-fixture',
+      status: ReleaseStatus.PUBLISHED,
+      observations: {
+        create: {
+          destinationIso3: 'GBR',
+          citizenshipIso3: 'BRA',
+          purposeCode: VisaPurposeCode.WORK,
+          metricType: MetricType.WORK_VISAS_ISSUED,
+          sourceCategoryCode: 'WORK_TEST',
+          sourceCategoryLabel: 'Synthetic work visa grants',
+          period: '2025',
+          unit: 'VISAS',
+          value: 84n,
+          dataStatus: DataStatus.AVAILABLE,
+          comparisonGroupId: 'uk-work-visas-test-2025',
+        },
+      },
+    },
+  });
+  await prisma.datasetRelease.create({
+    data: {
+      id: 'canada-test-release-2024',
+      datasetId: 'canada-imp-test',
+      sourcePublishedAt: new Date('2025-12-31T00:00:00Z'),
+      fetchedAt: new Date('2026-10-19T00:00:00Z'),
+      validatedAt: new Date('2026-10-19T00:00:00Z'),
+      publishedAt: new Date('2026-10-19T00:00:00Z'),
+      checksum: 'synthetic-canada-comparison-fixture',
+      status: ReleaseStatus.PUBLISHED,
+      observations: {
+        create: {
+          destinationIso3: 'CAN',
+          citizenshipIso3: 'BRA',
+          purposeCode: VisaPurposeCode.WORK,
+          metricType: MetricType.VALID_PERMIT_HOLDERS,
+          sourceCategoryCode: 'IMP_TEST',
+          sourceCategoryLabel: 'Synthetic IMP holders',
+          period: '2024',
+          unit: 'HOLDERS',
+          value: 156n,
+          dataStatus: DataStatus.AVAILABLE,
+          comparisonGroupId: 'canada-imp-test-2024',
+        },
+      },
+    },
+  });
+}

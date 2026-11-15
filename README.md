@@ -188,7 +188,7 @@ Before the first deployment:
 5. After adding a domain, set `CLOUDFLARE_ORIGIN_LOCK_ENABLED=true`, the exact public hostname in `CLOUDFLARE_ALLOWED_HOSTS`, and the current values published at `https://www.cloudflare.com/ips-v4` and `https://www.cloudflare.com/ips-v6` in `CLOUDFLARE_IP_RANGES`.
 6. Add the custom API hostname to Fly, proxy its DNS record through Cloudflare, and select Cloudflare SSL/TLS mode **Full (strict)**.
 
-On a push to `main`, `.github/workflows/api.yml` waits for all validation gates, deploys the Docker image, waits for the Fly health check, and runs the optional smoke test. Database migrations are intentionally outside this deploy workflow. Keep the GitHub production environment approval enabled when manual promotion is required.
+On a push to `main` or an approved manual dispatch, `.github/workflows/api.yml` waits for all validation gates, deploys the Docker image, waits for the Fly health check, and runs the optional smoke test. Database migrations are intentionally outside this deploy workflow. Keep the GitHub `production` environment approval enabled. The Vercel frontend must use the public HTTPS API URL with `/api/v1` in `VITE_API_BASE_URL`, and its exact production origin must be included in the Fly app's `CORS_ORIGINS` secret.
 
 ## Public API
 

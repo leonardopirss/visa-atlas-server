@@ -1,4 +1,4 @@
-name: API CI
+name: API CI/CD
 
 permissions:
   contents: read
@@ -7,6 +7,7 @@ on:
   pull_request:
   push:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   validate:
@@ -43,12 +44,14 @@ jobs:
 
   deploy:
     name: Deploy production
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/main')
     needs: validate
     runs-on: ubuntu-latest
     environment: production
     concurrency:
-      group: production
+      group: api-production
       cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
