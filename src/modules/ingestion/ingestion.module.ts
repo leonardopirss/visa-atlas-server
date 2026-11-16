@@ -11,7 +11,6 @@ import { UkHomeOfficeClient } from './adapters/uk-home-office/uk-home-office.cli
 import { UkHomeOfficeReferenceDataService } from './adapters/uk-home-office/uk-home-office-reference-data.service.js';
 import { UkHomeOfficeWorkbookReader } from './adapters/uk-home-office/uk-home-office-workbook.reader.js';
 import { EurostatIngestionRunner } from './eurostat-ingestion-runner.service.js';
-import { InitialIngestionService } from './initial-ingestion.service.js';
 import { IngestionService } from './ingestion.service.js';
 import { IrccCanadaIngestionRunner } from './ircc-canada-ingestion-runner.service.js';
 import { IngestionHealthService } from './observability/ingestion-health.service.js';
@@ -40,7 +39,6 @@ import { UkHomeOfficeObservationValidator } from './validation/uk-home-office-ob
     UkHomeOfficeWorkbookReader,
     UkHomeOfficeIngestionRunner,
     UkHomeOfficeObservationValidator,
-    InitialIngestionService,
     IngestionService,
     IngestionHealthService,
     IngestionLogger,
@@ -56,7 +54,6 @@ import { UkHomeOfficeObservationValidator } from './validation/uk-home-office-ob
     UkHomeOfficeIngestionRunner,
     IngestionService,
     IngestionHealthService,
-    InitialIngestionService,
     PublishReleaseService,
   ],
 })
