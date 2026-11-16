@@ -184,14 +184,14 @@ The production path is Cloudflare proxy/WAF → Fly.io → NestJS, with Supabase
 
 Before the first deployment:
 
-1. Add `FLY_API_TOKEN` to the protected GitHub `production` environment.
+1. Add `FLY_API_TOKEN` and the database-owner Supabase connection string as `MIGRATION_DATABASE_URL` to the protected GitHub `production` environment.
 2. Set `DATABASE_URL`, `REDIS_URL`, `RATE_LIMIT_IDENTITY_SECRET`, and the remaining runtime configuration with `fly secrets set`.
-3. Apply committed Prisma migrations through the separate database-release procedure before deploying code that depends on them.
+3. Keep `MIGRATION_DATABASE_URL` separate from the API runtime `DATABASE_URL`; only the migration credential may own and alter the schema.
 4. Until a custom domain exists, keep `CLOUDFLARE_ORIGIN_LOCK_ENABLED=false` and optionally set `API_SMOKE_URL=https://visa-atlas-server.fly.dev/api/v1/countries?pageSize=1` in the GitHub environment.
 5. After adding a domain, set `CLOUDFLARE_ORIGIN_LOCK_ENABLED=true`, the exact public hostname in `CLOUDFLARE_ALLOWED_HOSTS`, and the current values published at `https://www.cloudflare.com/ips-v4` and `https://www.cloudflare.com/ips-v6` in `CLOUDFLARE_IP_RANGES`.
 6. Add the custom API hostname to Fly, proxy its DNS record through Cloudflare, and select Cloudflare SSL/TLS mode **Full (strict)**.
 
-On a push to `main` or an approved manual dispatch, `.github/workflows/api.yml` waits for all validation gates, deploys the Docker image, waits for the Fly health check, and runs the optional smoke test. Database migrations are intentionally outside this deploy workflow. Keep the GitHub `production` environment approval enabled. The Vercel frontend must use the public HTTPS API URL with `/api/v1` in `VITE_API_BASE_URL`, and its exact production origin must be included in the Fly app's `CORS_ORIGINS` secret.
+On a push to `main` or an approved manual dispatch, `.github/workflows/api.yml` waits for all validation gates, validates the protected production secrets, installs the locked dependencies, applies committed Prisma migrations once with `MIGRATION_DATABASE_URL`, deploys the Docker image, waits for the Fly health check, and runs the optional smoke test. Keep the GitHub `production` environment approval enabled so migrations and application deployment share the same controlled promotion gate. The Vercel frontend must use the public HTTPS API URL with `/api/v1` in `VITE_API_BASE_URL`, and its exact production origin must be included in the Fly app's `CORS_ORIGINS` secret.
 
 ## Public API
 
