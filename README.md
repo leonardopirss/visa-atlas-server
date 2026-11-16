@@ -451,6 +451,12 @@ npm run prisma:migrate
 
 `prisma:migrate` uses `prisma migrate deploy`, which applies migrations already committed to the repository. The project does not provide a synthetic observation seed for development or production.
 
+Production Supabase tables use deny-by-default RLS and are not available to
+`anon`, `authenticated`, or `service_role`. The NestJS API connects with a
+dedicated PostgreSQL role whose credential exists only in the backend secret
+manager. Follow the complete provisioning and verification procedure in
+[`docs/operations/supabase-database-security.md`](docs/operations/supabase-database-security.md).
+
 ### Test environment
 
 By default, tests derive a `public_test` schema from `DATABASE_URL`. You may set `TEST_DATABASE_URL`, but its database or schema name must contain `test`, and it cannot equal the development URL. This guard protects the development database from suite cleanup.
@@ -461,6 +467,7 @@ By default, tests derive a `public_test` schema from `DATABASE_URL`. You may set
 - Helmet sets defensive HTTP headers;
 - CORS is restricted to configured origins, `GET` methods, and no credentials;
 - Prisma uses parameterized database queries;
+- Supabase RLS and grants block all Data API roles; only the dedicated Prisma server role can access application tables;
 - unexpected errors are sanitized, and all error responses use `Cache-Control: no-store`;
 - `x-correlation-id` is propagated only if it uses safe characters and is at most 128 characters; otherwise, the server generates a UUID;
 - successful responses use `Cache-Control: public, max-age=<ttl>, stale-while-revalidate=<ttl>`;
