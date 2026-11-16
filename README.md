@@ -103,7 +103,7 @@ npm run start:dev
 
 The API will be available at `http://localhost:3000/api/v1`.
 
-Docker Compose starts PostgreSQL with a persistent volume and an ephemeral Redis suitable only for local development/testing. Redis integration remains disabled until `REDIS_ENABLED=true`; the existing HTTP behavior is unchanged while it is disabled. At application startup, the versioned catalog of 249 countries is synchronized idempotently. The application then checks each official dataset and runs only the ingestions that do not yet have a published release. In the two-replica Docker topology, `api-2` starts after `api-1` is healthy so that initial ingestion is not duplicated.
+Docker Compose starts PostgreSQL with a persistent volume and an ephemeral Redis suitable only for local development/testing. Redis integration remains disabled until `REDIS_ENABLED=true`; the existing HTTP behavior is unchanged while it is disabled. At application startup, the versioned catalog of 249 countries is synchronized idempotently. Catalog synchronization does not create statistical data; run at least one [official ingestion job](#running-ingestion-jobs) to publish observations.
 
 Basic checks:
 
@@ -406,8 +406,6 @@ npm run ingest:eurostat
 npm run ingest:uk-home-office
 npm run ingest:ircc-canada
 ```
-
-These commands remain available for explicit refreshes. The HTTP application runs the same jobs automatically at startup only for datasets without a published release.
 
 The UK Home Office CLI also accepts a pinned official asset:
 
