@@ -1,0 +1,26 @@
+{
+  "fixtureType": "synthetic-structural-only",
+  "rows": [
+    ["Applications of entry clearance visas, by course level"],
+    ["Link to notes"],
+    [
+      "Year",
+      "Quarter",
+      "Nationality",
+      "Region",
+      "Visa type subgroup",
+      "Course level",
+      "Applications"
+    ],
+    [2025, "2025 Q1", "Brazil", "America Central and South", "Student", "Bachelors", 2],
+    [2025, "2025 Q2", "Brazil", "America Central and South", "Student", "Bachelors", 4],
+    [2025, "2025 Q3", "Brazil", "America Central and South", "Student", "Bachelors", 6],
+    [2025, "2025 Q4", "Brazil", "America Central and South", "Student", "Bachelors", 8],
+    [2025, "2025 Q1", "Brazil", "America Central and South", "Student", "Masters", 4],
+    [2025, "2025 Q2", "Brazil", "America Central and South", "Student", "Masters", 8],
+    [2025, "2025 Q3", "Brazil", "America Central and South", "Student", "Masters", 12],
+    [2025, "2025 Q4", "Brazil", "America Central and South", "Student", "Masters", 16],
+    [2025, "2025 Q1", "Argentina", "America Central and South", "Student", "Masters", 99],
+    [2026, "2026 Q1", "Brazil", "America Central and South", "Student", "Masters", 100]
+  ]
+}

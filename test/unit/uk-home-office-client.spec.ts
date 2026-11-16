@@ -42,4 +42,28 @@ describe('UK Home Office client', () => {
       ),
     ).rejects.toThrow('UK_HOME_OFFICE_CONTENT_TYPE_INVALID');
   });
+
+  it('descobre separadamente a planilha oficial de estudo', async () => {
+    const workbook = Buffer.from('PK synthetic study workbook');
+    jest
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(
+        new Response(
+          '<a href="https://assets.publishing.service.gov.uk/media/test/education-visas-datasets-mar-2026.xlsx">download</a>',
+          { headers: { 'content-type': 'text/html' } },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(workbook, {
+          headers: {
+            'content-type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          },
+        }),
+      );
+    await expect(new UkHomeOfficeClient().fetchBrazilStudyRelease()).resolves.toMatchObject({
+      workbook,
+      sourceUrl:
+        'https://assets.publishing.service.gov.uk/media/test/education-visas-datasets-mar-2026.xlsx',
+    });
+  });
 });

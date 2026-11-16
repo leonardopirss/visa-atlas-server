@@ -5,12 +5,15 @@ import { CountryDetailService } from '../../src/modules/countries/services/count
 import { UkHomeOfficeAdapter } from '../../src/modules/ingestion/adapters/uk-home-office/uk-home-office.adapter.js';
 import { UK_HOME_OFFICE_DATASET_ID } from '../../src/modules/ingestion/adapters/uk-home-office/uk-home-office.config.js';
 import { UkHomeOfficeReferenceDataService } from '../../src/modules/ingestion/adapters/uk-home-office/uk-home-office-reference-data.service.js';
+import { UkHomeOfficeStudyAdapter } from '../../src/modules/ingestion/adapters/uk-home-office/uk-home-office-study.adapter.js';
+import { UK_HOME_OFFICE_STUDY_DATASET_ID } from '../../src/modules/ingestion/adapters/uk-home-office/uk-home-office.config.js';
 import type { UkHomeOfficeRow } from '../../src/modules/ingestion/adapters/uk-home-office/uk-home-office.types.js';
 import { IngestionService } from '../../src/modules/ingestion/ingestion.service.js';
 import { IngestionLogger } from '../../src/modules/ingestion/observability/ingestion-logger.service.js';
 import { PublishReleaseService } from '../../src/modules/ingestion/services/publish-release.service.js';
 import { ObservationValidator } from '../../src/modules/ingestion/validation/observation.validator.js';
 import { UkHomeOfficeObservationValidator } from '../../src/modules/ingestion/validation/uk-home-office-observation.validator.js';
+import { UkHomeOfficeStudyObservationValidator } from '../../src/modules/ingestion/validation/uk-home-office-study-observation.validator.js';
 import { SourcesService } from '../../src/modules/sources/sources.service.js';
 import { DefaultFiltersService } from '../../src/modules/statistics/services/default-filters.service.js';
 import { TimeseriesService } from '../../src/modules/statistics/services/timeseries.service.js';
@@ -25,7 +28,9 @@ interface Fixture {
 describe('UK Home Office ingestion integration', () => {
   const database = new PrismaService();
   const adapter = new UkHomeOfficeAdapter();
+  const studyAdapter = new UkHomeOfficeStudyAdapter();
   const sourceValidator = new UkHomeOfficeObservationValidator();
+  const studyValidator = new UkHomeOfficeStudyObservationValidator();
   const ingestion = new IngestionService(
     database,
     new ObservationValidator(),
@@ -43,12 +48,16 @@ describe('UK Home Office ingestion integration', () => {
     new SourcesService(database),
   );
   let observations: ReturnType<UkHomeOfficeAdapter['parse']>;
+  let studyObservations: ReturnType<UkHomeOfficeStudyAdapter['parse']>;
   let rawPayload: string;
+  let studyRawPayload: string;
 
   beforeAll(async () => {
     await database.$connect();
     rawPayload = await readFile('test/fixtures/uk-home-office/occ-d02.synthetic.json', 'utf8');
     observations = adapter.parse((JSON.parse(rawPayload) as Fixture).rows);
+    studyRawPayload = await readFile('test/fixtures/uk-home-office/edu-d01.synthetic.json', 'utf8');
+    studyObservations = studyAdapter.parse((JSON.parse(studyRawPayload) as Fixture).rows);
   });
 
   beforeEach(async () => {
@@ -130,6 +139,51 @@ describe('UK Home Office ingestion integration', () => {
     const first = await ingestion.stage(input);
     const second = await ingestion.stage(input);
     expect(second).toEqual({ ...first, duplicate: true });
+  });
+
+  it('publica solicitações de estudo sem despublicar o snapshot de trabalho', async () => {
+    const work = await ingestion.stage({
+      datasetId: UK_HOME_OFFICE_DATASET_ID,
+      rawPayload,
+      fetchedAt: new Date('2026-10-24T00:00:00Z'),
+      sourcePublishedAt: null,
+      observations,
+    });
+    await publisher.publish(work.releaseId);
+
+    studyValidator.validate(studyObservations);
+    const study = await ingestion.stage({
+      datasetId: UK_HOME_OFFICE_STUDY_DATASET_ID,
+      rawPayload: studyRawPayload,
+      fetchedAt: new Date('2026-10-24T01:00:00Z'),
+      sourcePublishedAt: null,
+      observations: studyObservations,
+    });
+    await publisher.publish(study.releaseId);
+
+    expect(
+      await prisma.datasetRelease.findMany({
+        where: { id: { in: [work.releaseId, study.releaseId] } },
+        orderBy: { datasetId: 'asc' },
+        select: { status: true },
+      }),
+    ).toEqual([{ status: ReleaseStatus.PUBLISHED }, { status: ReleaseStatus.PUBLISHED }]);
+    const query = {
+      citizenship: 'BRA',
+      purpose: 'STUDY' as const,
+      metricType: 'APPLICATIONS_RECEIVED' as const,
+      year: 2025,
+    };
+    const studyMap = await statistics.getMap(query);
+    expect(studyMap.countries.find(({ iso3 }) => iso3 === 'GBR')?.statistic).toMatchObject({
+      value: 60,
+      unit: 'APPLICATIONS',
+    });
+    await expect(detail.get('GBR', query)).resolves.toMatchObject({
+      statistics: { value: 60 },
+      classifications: [{}, {}],
+      sources: [{ organization: 'UK Home Office', datasetCode: 'Edu_D01' }],
+    });
   });
 
   it('rejeita dimensões alteradas sem substituir o snapshot publicado', async () => {

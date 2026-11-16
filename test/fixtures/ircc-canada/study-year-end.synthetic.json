@@ -1,0 +1,13 @@
+{
+  "fixtureType": "synthetic-structural-only",
+  "sourceStructure": "IRCC study permit holders on December 31 by citizenship",
+  "rows": [
+    [
+      "Canada – Study permit holders with a valid permit on December 31st by country of citizenship, 2022 - 2024"
+    ],
+    [null],
+    ["Country of Citizenship", "2022", "2023", "2024"],
+    ["Argentina", "1,000", "1,100", "1,200"],
+    ["Brazil", "14,405", "15,570", "12,775"]
+  ]
+}

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { IngestionValidationError } from '../../validation/ingestion-validation.error.js';
-import { IRCC_CANADA_WORKBOOK_URL } from './ircc-canada.config.js';
+import { IRCC_CANADA_STUDY_WORKBOOK_URL, IRCC_CANADA_WORKBOOK_URL } from './ircc-canada.config.js';
 import type { IrccCanadaReleasePayload } from './ircc-canada.types.js';
 
 const REQUEST_TIMEOUT_MS = 60_000;
@@ -9,7 +9,15 @@ const MAX_WORKBOOK_BYTES = 2 * 1024 * 1024;
 @Injectable()
 export class IrccCanadaClient {
   async fetchBrazilWorkRelease(): Promise<IrccCanadaReleasePayload> {
-    const response = await fetch(IRCC_CANADA_WORKBOOK_URL, {
+    return this.fetchRelease(IRCC_CANADA_WORKBOOK_URL);
+  }
+
+  async fetchBrazilStudyRelease(): Promise<IrccCanadaReleasePayload> {
+    return this.fetchRelease(IRCC_CANADA_STUDY_WORKBOOK_URL);
+  }
+
+  private async fetchRelease(workbookUrl: string): Promise<IrccCanadaReleasePayload> {
+    const response = await fetch(workbookUrl, {
       headers: { Accept: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' },
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
       redirect: 'follow',

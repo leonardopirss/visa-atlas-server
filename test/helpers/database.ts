@@ -48,7 +48,12 @@ export async function seedPublishedFixture(): Promise<void> {
     ],
   });
   await prisma.citizenship.create({ data: { iso3: 'BRA', namePt: 'Brasil' } });
-  await prisma.visaPurpose.create({ data: { code: VisaPurposeCode.WORK, label: 'Trabalho' } });
+  await prisma.visaPurpose.createMany({
+    data: [
+      { code: VisaPurposeCode.WORK, label: 'Trabalho' },
+      { code: VisaPurposeCode.STUDY, label: 'Estudo' },
+    ],
+  });
   await prisma.sourceOrganization.create({
     data: {
       id: 'eurostat',
@@ -157,6 +162,111 @@ export async function seedPublishedFixture(): Promise<void> {
   });
 }
 
+export async function seedPublishedStudyFixture(): Promise<void> {
+  await prisma.sourceDataset.create({
+    data: {
+      id: 'migr-resedu',
+      organizationId: 'eurostat',
+      code: 'migr_resedu',
+      url: 'https://ec.europa.eu/eurostat/databrowser/view/migr_resedu/default/table',
+      methodologyUrl: 'https://ec.europa.eu/eurostat/cache/metadata/en/migr_res_esms.htm',
+      schemaVersion: 'synthetic-test-v1',
+    },
+  });
+  await prisma.comparisonGroup.createMany({
+    data: [
+      {
+        id: 'test-study-2024',
+        datasetId: 'migr-resedu',
+        metricType: MetricType.FIRST_RESIDENCE_PERMITS_GRANTED,
+        citizenshipIso3: 'BRA',
+        purposeCode: VisaPurposeCode.STUDY,
+        period: '2024',
+        unit: 'PER',
+        methodologyVersion: 'synthetic-test-v1',
+      },
+      {
+        id: 'test-study-2025',
+        datasetId: 'migr-resedu',
+        metricType: MetricType.FIRST_RESIDENCE_PERMITS_GRANTED,
+        citizenshipIso3: 'BRA',
+        purposeCode: VisaPurposeCode.STUDY,
+        period: '2025',
+        unit: 'PER',
+        methodologyVersion: 'synthetic-test-v1',
+      },
+    ],
+  });
+  await prisma.datasetRelease.create({
+    data: {
+      id: 'test-study-release-2025',
+      datasetId: 'migr-resedu',
+      sourcePublishedAt: new Date('2026-09-28T00:00:00Z'),
+      fetchedAt: new Date('2026-11-16T00:00:00Z'),
+      validatedAt: new Date('2026-11-16T00:00:00Z'),
+      publishedAt: new Date('2026-11-16T00:00:00Z'),
+      checksum: 'synthetic-study-contract-fixture',
+      status: ReleaseStatus.PUBLISHED,
+      observations: {
+        create: [
+          {
+            destinationIso3: 'ESP',
+            citizenshipIso3: 'BRA',
+            purposeCode: VisaPurposeCode.STUDY,
+            metricType: MetricType.FIRST_RESIDENCE_PERMITS_GRANTED,
+            sourceCategoryCode: 'EDUC',
+            sourceCategoryLabel: 'Education reasons',
+            period: '2024',
+            unit: 'PER',
+            value: 18n,
+            dataStatus: DataStatus.AVAILABLE,
+            comparisonGroupId: 'test-study-2024',
+          },
+          {
+            destinationIso3: 'DEU',
+            citizenshipIso3: 'BRA',
+            purposeCode: VisaPurposeCode.STUDY,
+            metricType: MetricType.FIRST_RESIDENCE_PERMITS_GRANTED,
+            sourceCategoryCode: 'EDUC',
+            sourceCategoryLabel: 'Education reasons',
+            period: '2024',
+            unit: 'PER',
+            value: 8n,
+            dataStatus: DataStatus.AVAILABLE,
+            comparisonGroupId: 'test-study-2024',
+          },
+          {
+            destinationIso3: 'ESP',
+            citizenshipIso3: 'BRA',
+            purposeCode: VisaPurposeCode.STUDY,
+            metricType: MetricType.FIRST_RESIDENCE_PERMITS_GRANTED,
+            sourceCategoryCode: 'EDUC',
+            sourceCategoryLabel: 'Education reasons',
+            period: '2025',
+            unit: 'PER',
+            value: 24n,
+            dataStatus: DataStatus.AVAILABLE,
+            comparisonGroupId: 'test-study-2025',
+          },
+          {
+            destinationIso3: 'DEU',
+            citizenshipIso3: 'BRA',
+            purposeCode: VisaPurposeCode.STUDY,
+            metricType: MetricType.FIRST_RESIDENCE_PERMITS_GRANTED,
+            sourceCategoryCode: 'EDUC',
+            sourceCategoryLabel: 'Education reasons',
+            period: '2025',
+            unit: 'PER',
+            value: 12n,
+            dataStatus: DataStatus.AVAILABLE,
+            comparisonGroupId: 'test-study-2025',
+          },
+        ],
+      },
+    },
+  });
+}
+
 export async function seedDestinationComparisonFixture(): Promise<void> {
   await prisma.country.createMany({
     data: [
@@ -197,6 +307,20 @@ export async function seedDestinationComparisonFixture(): Promise<void> {
         url: 'https://open.canada.ca/data/en/dataset',
         schemaVersion: 'synthetic-test-v1',
       },
+      {
+        id: 'uk-study-visas-test',
+        organizationId: 'uk-home-office-test',
+        code: 'Edu_D01_TEST',
+        url: 'https://www.gov.uk/government/statistical-data-sets/immigration-system-statistics-data-tables',
+        schemaVersion: 'synthetic-test-v1',
+      },
+      {
+        id: 'canada-study-test',
+        organizationId: 'ircc-test',
+        code: 'STUDY_CITZ_YEAR_END_TEST',
+        url: 'https://open.canada.ca/data/en/dataset/90115b00-f9b8-49e8-afa3-b4cff8facaee',
+        schemaVersion: 'synthetic-test-v1',
+      },
     ],
   });
   await prisma.comparisonGroup.createMany({
@@ -217,6 +341,26 @@ export async function seedDestinationComparisonFixture(): Promise<void> {
         metricType: MetricType.VALID_PERMIT_HOLDERS,
         citizenshipIso3: 'BRA',
         purposeCode: VisaPurposeCode.WORK,
+        period: '2024',
+        unit: 'HOLDERS',
+        methodologyVersion: 'synthetic-test-v1',
+      },
+      {
+        id: 'uk-study-visas-test-2025',
+        datasetId: 'uk-study-visas-test',
+        metricType: MetricType.APPLICATIONS_RECEIVED,
+        citizenshipIso3: 'BRA',
+        purposeCode: VisaPurposeCode.STUDY,
+        period: '2025',
+        unit: 'APPLICATIONS',
+        methodologyVersion: 'synthetic-test-v1',
+      },
+      {
+        id: 'canada-study-test-2024',
+        datasetId: 'canada-study-test',
+        metricType: MetricType.VALID_PERMIT_HOLDERS,
+        citizenshipIso3: 'BRA',
+        purposeCode: VisaPurposeCode.STUDY,
         period: '2024',
         unit: 'HOLDERS',
         methodologyVersion: 'synthetic-test-v1',
@@ -273,6 +417,60 @@ export async function seedDestinationComparisonFixture(): Promise<void> {
           value: 156n,
           dataStatus: DataStatus.AVAILABLE,
           comparisonGroupId: 'canada-imp-test-2024',
+        },
+      },
+    },
+  });
+  await prisma.datasetRelease.create({
+    data: {
+      id: 'uk-study-test-release-2025',
+      datasetId: 'uk-study-visas-test',
+      sourcePublishedAt: new Date('2026-05-21T00:00:00Z'),
+      fetchedAt: new Date('2026-11-16T00:00:00Z'),
+      validatedAt: new Date('2026-11-16T00:00:00Z'),
+      publishedAt: new Date('2026-11-16T00:00:00Z'),
+      checksum: 'synthetic-uk-study-fixture',
+      status: ReleaseStatus.PUBLISHED,
+      observations: {
+        create: {
+          destinationIso3: 'GBR',
+          citizenshipIso3: 'BRA',
+          purposeCode: VisaPurposeCode.STUDY,
+          metricType: MetricType.APPLICATIONS_RECEIVED,
+          sourceCategoryCode: 'Student:Masters',
+          sourceCategoryLabel: 'Student — Masters',
+          period: '2025',
+          unit: 'APPLICATIONS',
+          value: 60n,
+          dataStatus: DataStatus.AVAILABLE,
+          comparisonGroupId: 'uk-study-visas-test-2025',
+        },
+      },
+    },
+  });
+  await prisma.datasetRelease.create({
+    data: {
+      id: 'canada-study-test-release-2024',
+      datasetId: 'canada-study-test',
+      sourcePublishedAt: new Date('2025-12-31T00:00:00Z'),
+      fetchedAt: new Date('2026-11-16T00:00:00Z'),
+      validatedAt: new Date('2026-11-16T00:00:00Z'),
+      publishedAt: new Date('2026-11-16T00:00:00Z'),
+      checksum: 'synthetic-canada-study-fixture',
+      status: ReleaseStatus.PUBLISHED,
+      observations: {
+        create: {
+          destinationIso3: 'CAN',
+          citizenshipIso3: 'BRA',
+          purposeCode: VisaPurposeCode.STUDY,
+          metricType: MetricType.VALID_PERMIT_HOLDERS,
+          sourceCategoryCode: 'STUDY_PERMIT',
+          sourceCategoryLabel: 'Study permit holders',
+          period: '2024',
+          unit: 'HOLDERS',
+          value: 12_775n,
+          dataStatus: DataStatus.AVAILABLE,
+          comparisonGroupId: 'canada-study-test-2024',
         },
       },
     },

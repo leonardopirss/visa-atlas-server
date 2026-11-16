@@ -3,13 +3,18 @@ import { ReleaseStatus } from '@prisma/client';
 import { PrismaService } from '../../src/common/database/prisma.service.js';
 import { CountryDetailService } from '../../src/modules/countries/services/country-detail.service.js';
 import { IrccCanadaAdapter } from '../../src/modules/ingestion/adapters/ircc-canada/ircc-canada.adapter.js';
-import { IRCC_CANADA_DATASET_ID } from '../../src/modules/ingestion/adapters/ircc-canada/ircc-canada.config.js';
+import {
+  IRCC_CANADA_DATASET_ID,
+  IRCC_CANADA_STUDY_DATASET_ID,
+} from '../../src/modules/ingestion/adapters/ircc-canada/ircc-canada.config.js';
 import { IrccCanadaReferenceDataService } from '../../src/modules/ingestion/adapters/ircc-canada/ircc-canada-reference-data.service.js';
+import { IrccCanadaStudyAdapter } from '../../src/modules/ingestion/adapters/ircc-canada/ircc-canada-study.adapter.js';
 import type { IrccCanadaRow } from '../../src/modules/ingestion/adapters/ircc-canada/ircc-canada.types.js';
 import { IngestionService } from '../../src/modules/ingestion/ingestion.service.js';
 import { IngestionLogger } from '../../src/modules/ingestion/observability/ingestion-logger.service.js';
 import { PublishReleaseService } from '../../src/modules/ingestion/services/publish-release.service.js';
 import { IrccCanadaObservationValidator } from '../../src/modules/ingestion/validation/ircc-canada-observation.validator.js';
+import { IrccCanadaStudyObservationValidator } from '../../src/modules/ingestion/validation/ircc-canada-study-observation.validator.js';
 import { ObservationValidator } from '../../src/modules/ingestion/validation/observation.validator.js';
 import { SourcesService } from '../../src/modules/sources/sources.service.js';
 import { DefaultFiltersService } from '../../src/modules/statistics/services/default-filters.service.js';
@@ -25,7 +30,9 @@ interface Fixture {
 describe('IRCC Canada ingestion integration', () => {
   const database = new PrismaService();
   const adapter = new IrccCanadaAdapter();
+  const studyAdapter = new IrccCanadaStudyAdapter();
   const sourceValidator = new IrccCanadaObservationValidator();
+  const studyValidator = new IrccCanadaStudyObservationValidator();
   const ingestion = new IngestionService(
     database,
     new ObservationValidator(),
@@ -43,12 +50,19 @@ describe('IRCC Canada ingestion integration', () => {
     new SourcesService(database),
   );
   let observations: ReturnType<IrccCanadaAdapter['parse']>;
+  let studyObservations: ReturnType<IrccCanadaStudyAdapter['parse']>;
   let rawPayload: string;
+  let studyRawPayload: string;
 
   beforeAll(async () => {
     await database.$connect();
     rawPayload = await readFile('test/fixtures/ircc-canada/imp-year-end.synthetic.json', 'utf8');
     observations = adapter.parse((JSON.parse(rawPayload) as Fixture).rows);
+    studyRawPayload = await readFile(
+      'test/fixtures/ircc-canada/study-year-end.synthetic.json',
+      'utf8',
+    );
+    studyObservations = studyAdapter.parse((JSON.parse(studyRawPayload) as Fixture).rows);
   });
 
   beforeEach(async () => {
@@ -126,6 +140,56 @@ describe('IRCC Canada ingestion integration', () => {
     const first = await ingestion.stage(input);
     const second = await ingestion.stage(input);
     expect(second).toEqual({ ...first, duplicate: true });
+  });
+
+  it('publica titulares de estudo sem despublicar o snapshot de trabalho', async () => {
+    const work = await ingestion.stage({
+      datasetId: IRCC_CANADA_DATASET_ID,
+      rawPayload,
+      fetchedAt: new Date('2026-10-25T00:00:00Z'),
+      sourcePublishedAt: null,
+      observations,
+    });
+    await publisher.publish(work.releaseId);
+
+    studyValidator.validate(studyObservations);
+    const study = await ingestion.stage({
+      datasetId: IRCC_CANADA_STUDY_DATASET_ID,
+      rawPayload: studyRawPayload,
+      fetchedAt: new Date('2026-10-25T01:00:00Z'),
+      sourcePublishedAt: null,
+      observations: studyObservations,
+    });
+    await publisher.publish(study.releaseId);
+
+    expect(
+      await prisma.datasetRelease.findMany({
+        where: { id: { in: [work.releaseId, study.releaseId] } },
+        orderBy: { datasetId: 'asc' },
+        select: { status: true },
+      }),
+    ).toEqual([{ status: ReleaseStatus.PUBLISHED }, { status: ReleaseStatus.PUBLISHED }]);
+    const query = {
+      citizenship: 'BRA',
+      purpose: 'STUDY' as const,
+      metricType: 'VALID_PERMIT_HOLDERS' as const,
+      year: 2024,
+    };
+    const map = await statistics.getMap(query);
+    expect(map.countries.find(({ iso3 }) => iso3 === 'CAN')?.statistic).toMatchObject({
+      value: 12_775,
+      unit: 'HOLDERS',
+      metricType: 'VALID_PERMIT_HOLDERS',
+    });
+    await expect(detail.get('CAN', query)).resolves.toMatchObject({
+      statistics: { value: 12_775 },
+      sources: [
+        {
+          organization: 'Immigration, Refugees and Citizenship Canada (IRCC)',
+          datasetCode: 'STUDY_CITZ_YEAR_END',
+        },
+      ],
+    });
   });
 
   it('rejects changed dimensions without replacing the published snapshot', async () => {

@@ -27,7 +27,9 @@ export class EurostatAdapter {
         ]),
       );
       const sourceCategoryCode = dimensions[config.purposeDimension];
-      if (!sourceCategoryCode || !config.workCategoryCodes.includes(sourceCategoryCode)) continue;
+      if (!sourceCategoryCode || !config.purposeCategoryCodes.includes(sourceCategoryCode)) {
+        continue;
+      }
       const destination = dimensions[config.destinationDimension];
       const citizenship = dimensions[config.citizenshipDimension];
       const period = dimensions[config.periodDimension];

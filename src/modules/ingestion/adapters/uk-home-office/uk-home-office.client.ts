@@ -10,7 +10,21 @@ const MAX_WORKBOOK_BYTES = 12 * 1024 * 1024;
 @Injectable()
 export class UkHomeOfficeClient {
   async fetchBrazilWorkRelease(configuredUrl?: string): Promise<UkHomeOfficeReleasePayload> {
-    const sourceUrl = configuredUrl ?? (await this.discoverLatestWorkbook());
+    return this.fetchRelease(
+      configuredUrl,
+      /href="([^"]*occupation-soc2020-visas-datasets-[^"]+\.xlsx)"/gi,
+    );
+  }
+
+  async fetchBrazilStudyRelease(configuredUrl?: string): Promise<UkHomeOfficeReleasePayload> {
+    return this.fetchRelease(configuredUrl, /href="([^"]*education-visas-datasets-[^"]+\.xlsx)"/gi);
+  }
+
+  private async fetchRelease(
+    configuredUrl: string | undefined,
+    workbookPattern: RegExp,
+  ): Promise<UkHomeOfficeReleasePayload> {
+    const sourceUrl = configuredUrl ?? (await this.discoverLatestWorkbook(workbookPattern));
     const response = await fetch(sourceUrl, {
       headers: {
         Accept: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -45,7 +59,7 @@ export class UkHomeOfficeClient {
     };
   }
 
-  private async discoverLatestWorkbook(): Promise<string> {
+  private async discoverLatestWorkbook(workbookPattern: RegExp): Promise<string> {
     const response = await fetch(UK_HOME_OFFICE_PAGE_URL, {
       headers: { Accept: 'text/html' },
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
@@ -61,9 +75,7 @@ export class UkHomeOfficeClient {
     if (Buffer.byteLength(html, 'utf8') > MAX_PAGE_BYTES) {
       throw new IngestionValidationError('UK_HOME_OFFICE_INDEX_TOO_LARGE');
     }
-    const matches = [
-      ...html.matchAll(/href="([^"]*occupation-soc2020-visas-datasets-[^"]+\.xlsx)"/gi),
-    ];
+    const matches = [...html.matchAll(workbookPattern)];
     const href = matches[0]?.[1]?.replaceAll('&amp;', '&');
     if (!href) throw new IngestionValidationError('UK_HOME_OFFICE_WORKBOOK_LINK_MISSING');
     const url = new URL(href, UK_HOME_OFFICE_PAGE_URL);

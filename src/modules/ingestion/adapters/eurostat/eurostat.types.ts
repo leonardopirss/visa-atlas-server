@@ -20,7 +20,7 @@ export interface EurostatAdapterConfig {
   purposeDimension: string;
   periodDimension: string;
   unitDimension: string;
-  workCategoryCodes: readonly string[];
+  purposeCategoryCodes: readonly string[];
   countUnitCodes: readonly string[];
   destinationIso2ToIso3: Readonly<Record<string, string>>;
   citizenshipIso2ToIso3: Readonly<Record<string, string>>;

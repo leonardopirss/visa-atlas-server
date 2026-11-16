@@ -1,5 +1,5 @@
 import { Injectable, Optional } from '@nestjs/common';
-import type { Prisma, VisaPurposeCode } from '@prisma/client';
+import type { Prisma } from '@prisma/client';
 import { RedisCacheService } from '../../../common/cache/redis-cache.service.js';
 import type { TimeseriesQueryDto } from '../../../common/dto/statistics-query.dto.js';
 import { PrismaService } from '../../../common/database/prisma.service.js';
@@ -56,7 +56,7 @@ export class TimeseriesService {
     const groups = await this.prisma.comparisonGroup.findMany({
       where: {
         citizenshipIso3: query.citizenship,
-        purposeCode: query.purpose as VisaPurposeCode,
+        purposeCode: query.purpose,
         metricType: query.metricType,
         ...(query.comparisonGroupId ? { id: query.comparisonGroupId } : {}),
         observations: {

@@ -25,7 +25,7 @@ export class StatisticsService {
 
   async getMap(query: StatisticsQueryDto): Promise<{
     citizenship: string;
-    purpose: 'WORK';
+    purpose: VisaPurposeCode;
     year: number | null;
     countries: Array<{ iso3: string; statistic: Statistic }>;
     legendLabel: string;
@@ -49,14 +49,14 @@ export class StatisticsService {
 
   private async loadMap(query: StatisticsQueryDto): Promise<{
     citizenship: string;
-    purpose: 'WORK';
+    purpose: VisaPurposeCode;
     year: number | null;
     countries: Array<{ iso3: string; statistic: Statistic }>;
     legendLabel: string;
   }> {
     const filters = await this.defaultFilters.resolve({
       citizenship: query.citizenship,
-      purpose: query.purpose as VisaPurposeCode,
+      purpose: query.purpose,
       metricType: query.metricType,
       ...(query.year === undefined ? {} : { year: query.year }),
       ...(query.comparisonGroupId === undefined
@@ -82,7 +82,7 @@ export class StatisticsService {
 
     return {
       citizenship: filters.citizenship,
-      purpose: 'WORK',
+      purpose: filters.purpose,
       year: filters.year,
       countries: countries.map(({ iso3 }) => {
         const observation = byCountry.get(iso3);
@@ -98,18 +98,25 @@ export class StatisticsService {
               ),
         };
       }),
-      legendLabel: this.legendLabel(filters.metricType),
+      legendLabel: this.legendLabel(filters.metricType, filters.purpose),
     };
   }
 
-  private legendLabel(metricType: StatisticsQueryDto['metricType']): string {
+  private legendLabel(
+    metricType: StatisticsQueryDto['metricType'],
+    purpose: VisaPurposeCode,
+  ): string {
     if (metricType === 'WORK_VISAS_ISSUED') {
       return 'Vistos de trabalho emitidos; volume administrativo, não probabilidade';
     }
     if (metricType === 'VALID_PERMIT_HOLDERS') {
-      return 'Titulares brasileiros do IMP com permissão de trabalho válida em 31 de dezembro; valores arredondados pela fonte';
+      return purpose === 'STUDY'
+        ? 'Titulares brasileiros com permissão de estudo válida em 31 de dezembro; volume administrativo, não probabilidade'
+        : 'Titulares brasileiros do IMP com permissão de trabalho válida em 31 de dezembro; valores arredondados pela fonte';
     }
-    return 'Primeiras autorizações de residência por trabalho; não representa vistos consulares';
+    return purpose === 'STUDY'
+      ? 'Primeiras autorizações de residência por educação; não representa vistos consulares'
+      : 'Primeiras autorizações de residência por trabalho; não representa vistos consulares';
   }
 
   private unavailableStatistic(

@@ -33,6 +33,7 @@ enum DataStatus {
 
 enum VisaPurposeCode {
   WORK
+  STUDY
 }
 
 enum SponsorshipRequirement {

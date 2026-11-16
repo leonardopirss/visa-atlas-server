@@ -1,16 +1,6 @@
-import { MetricType } from '@prisma/client';
+import { MetricType, VisaPurposeCode } from '@prisma/client';
 import { Transform, Type } from 'class-transformer';
-import {
-  IsEnum,
-  IsIn,
-  IsInt,
-  IsOptional,
-  IsString,
-  Matches,
-  Max,
-  MaxLength,
-  Min,
-} from 'class-validator';
+import { IsEnum, IsInt, IsOptional, IsString, Matches, Max, MaxLength, Min } from 'class-validator';
 import {
   DEFAULT_CITIZENSHIP,
   DEFAULT_METRIC_TYPE,
@@ -26,8 +16,8 @@ export class StatisticsQueryDto {
   citizenship: string = DEFAULT_CITIZENSHIP;
 
   @IsOptional()
-  @IsIn(['WORK'])
-  purpose: 'WORK' = DEFAULT_PURPOSE;
+  @IsEnum(VisaPurposeCode)
+  purpose: VisaPurposeCode = DEFAULT_PURPOSE;
 
   @IsOptional()
   @Type(() => Number)
@@ -55,8 +45,8 @@ export class TimeseriesQueryDto {
   citizenship: string = DEFAULT_CITIZENSHIP;
 
   @IsOptional()
-  @IsIn(['WORK'])
-  purpose: 'WORK' = DEFAULT_PURPOSE;
+  @IsEnum(VisaPurposeCode)
+  purpose: VisaPurposeCode = DEFAULT_PURPOSE;
 
   @IsOptional()
   @IsEnum(MetricType)
@@ -80,4 +70,21 @@ export class TimeseriesQueryDto {
   @Min(1900)
   @Max(2100)
   toYear?: number;
+}
+
+export class DefaultFiltersQueryDto {
+  @IsOptional()
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.toUpperCase() : value,
+  )
+  @Matches(/^[A-Z]{3}$/)
+  citizenship: string = DEFAULT_CITIZENSHIP;
+
+  @IsOptional()
+  @IsEnum(VisaPurposeCode)
+  purpose: VisaPurposeCode = DEFAULT_PURPOSE;
+
+  @IsOptional()
+  @IsEnum(MetricType)
+  metricType: MetricType = DEFAULT_METRIC_TYPE;
 }
