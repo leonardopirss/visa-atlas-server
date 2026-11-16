@@ -12,9 +12,11 @@ pass through the NestJS API and Prisma.
    `anon`/publishable key, or a `service_role`/secret key in the application.
 3. Store the connection string only as the backend `DATABASE_URL` secret. Never
    create a `VITE_*` variable containing a database password or Supabase secret.
-4. Apply committed Prisma migrations with a separate database-owner credential
-   in the controlled database-release procedure. Do not store that credential
-   in Fly.io or use it as the API's runtime `DATABASE_URL`.
+4. Store a separate database-owner connection string as
+   `MIGRATION_DATABASE_URL` in the protected GitHub `production` environment.
+   The deployment workflow applies committed Prisma migrations with that
+   credential before deploying the application. Do not store it in Fly.io or
+   use it as the API's runtime `DATABASE_URL`.
 
 Create the API login in the Supabase SQL editor while connected as `postgres`.
 Generate the password in a password manager and substitute it only in the SQL
