@@ -20,7 +20,12 @@ import {
   RATE_LIMIT_STORE,
   type RateLimitStore,
 } from '../../src/common/http/redis-rate-limit.store.js';
-import { prisma, resetDatabase, seedPublishedFixture } from '../helpers/database.js';
+import {
+  prisma,
+  resetDatabase,
+  seedPublishedFixture,
+  seedPublishedStudyFixture,
+} from '../helpers/database.js';
 
 describe('public API contract: defaults, countries and map', () => {
   let app: INestApplication;
@@ -35,6 +40,7 @@ describe('public API contract: defaults, countries and map', () => {
   beforeEach(async () => {
     await resetDatabase();
     await seedPublishedFixture();
+    await seedPublishedStudyFixture();
   });
 
   afterAll(async () => {
@@ -103,6 +109,26 @@ describe('public API contract: defaults, countries and map', () => {
         'value',
       ].sort(),
     );
+  });
+
+  it('accepts study as a distinct purpose without reusing work observations', async () => {
+    const response = await request(app.getHttpServer())
+      .get('/api/v1/stats/map?purpose=STUDY')
+      .expect(200);
+
+    expect(response.body).toMatchObject({ purpose: 'STUDY', year: 2025 });
+    const countries = response.body.countries as Array<{
+      statistic: { value: number | null };
+    }>;
+    expect(countries.find((country) => country.statistic.value === 24)).toBeDefined();
+  });
+
+  it('rejects an unknown migration purpose', async () => {
+    const response = await request(app.getHttpServer())
+      .get('/api/v1/stats/map?purpose=TOURISM')
+      .expect(400);
+
+    expect(response.body.code).toBe('VALIDATION_ERROR');
   });
 
   it('preserves body ordering, status, and cache headers across repeated responses', async () => {

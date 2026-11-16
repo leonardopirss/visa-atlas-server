@@ -3,7 +3,7 @@ info:
   title: Visa Atlas Public API
   version: 1.0.0
   description: >-
-    Contrato PROPOSTO para MVP BRA/WORK. O campo metricType discrimina métricas migratórias.
+    Contrato para o recorte BRA com finalidades WORK e STUDY. O campo metricType discrimina métricas migratórias.
     FIRST_RESIDENCE_PERMITS_GRANTED não significa WORK_VISAS_ISSUED.
 servers:
   - url: /api/v1
@@ -13,6 +13,10 @@ paths:
       operationId: getFilterDefaults
       tags: [Filters]
       summary: Filtros e ano comum de releases publicados
+      parameters:
+        - { $ref: '#/components/parameters/Citizenship' }
+        - { $ref: '#/components/parameters/Purpose' }
+        - { $ref: '#/components/parameters/MetricType' }
       responses:
         '200':
           description: Padrões conhecidos; year pode ser null se ainda não existem releases equivalentes
@@ -106,7 +110,7 @@ components:
   parameters:
     Iso3: { name: iso3, in: path, required: true, schema: { $ref: '#/components/schemas/Iso3' } }
     Citizenship: { name: citizenship, in: query, required: false, schema: { $ref: '#/components/schemas/Iso3', default: BRA } }
-    Purpose: { name: purpose, in: query, required: false, schema: { type: string, enum: [WORK], default: WORK } }
+    Purpose: { name: purpose, in: query, required: false, schema: { type: string, enum: [WORK, STUDY], default: WORK } }
     YearOptional: { name: year, in: query, required: false, description: 'Na ausência, selecionar último ano comum validado', schema: { type: integer, minimum: 1900, maximum: 2100 } }
     MetricType: { name: metricType, in: query, required: false, schema: { $ref: '#/components/schemas/MetricType' } }
     ComparisonGroupId: { name: comparisonGroupId, in: query, required: false, schema: { type: string, minLength: 1, maxLength: 200 } }
@@ -146,7 +150,7 @@ components:
       required: [citizenship, purpose, year, metricType, comparisonGroupId]
       properties:
         citizenship: { $ref: '#/components/schemas/Iso3' }
-        purpose: { type: string, enum: [WORK] }
+        purpose: { type: string, enum: [WORK, STUDY] }
         year: { type: [integer, 'null'] }
         metricType: { $ref: '#/components/schemas/MetricType' }
         comparisonGroupId: { type: [string, 'null'] }
@@ -182,7 +186,7 @@ components:
       required: [citizenship, purpose, year, countries]
       properties:
         citizenship: { $ref: '#/components/schemas/Iso3' }
-        purpose: { type: string, enum: [WORK] }
+        purpose: { type: string, enum: [WORK, STUDY] }
         year: { type: [integer, 'null'] }
         countries: { type: array, items: { $ref: '#/components/schemas/MapCountry' } }
         legendLabel: { type: string }
@@ -192,7 +196,7 @@ components:
       properties:
         id: { type: string }
         title: { type: string }
-        purpose: { type: string, enum: [WORK] }
+        purpose: { type: string, enum: [WORK, STUDY] }
         sponsorshipRequirement: { type: string, enum: [REQUIRED, NOT_REQUIRED, DEPENDS, UNKNOWN] }
         officialUrl: { type: [string, 'null'], format: uri }
         verifiedAt: { type: [string, 'null'], format: date-time }
@@ -225,7 +229,7 @@ components:
       properties:
         iso3: { $ref: '#/components/schemas/Iso3' }
         citizenship: { $ref: '#/components/schemas/Iso3' }
-        purpose: { type: string, enum: [WORK] }
+        purpose: { type: string, enum: [WORK, STUDY] }
         metricType: { $ref: '#/components/schemas/MetricType' }
         comparisonGroupId: { type: [string, 'null'] }
         points: { type: array, items: { $ref: '#/components/schemas/Timepoint' } }

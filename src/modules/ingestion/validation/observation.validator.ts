@@ -17,7 +17,7 @@ export class ObservationValidator {
   }
 
   private validateOne(observation: StagedObservation): void {
-    if (observation.purpose !== VisaPurposeCode.WORK) {
+    if (!Object.values(VisaPurposeCode).includes(observation.purpose)) {
       throw new IngestionValidationError('PURPOSE_INVALID');
     }
     if (observation.citizenshipIso3 !== 'BRA') {
@@ -48,6 +48,16 @@ export class ObservationValidator {
     if (observation.metricType === MetricType.WORK_VISAS_ISSUED) {
       if (observation.destinationIso3 !== 'GBR' || observation.unit !== 'VISAS') {
         throw new IngestionValidationError('UK_HOME_OFFICE_DIMENSIONS_INVALID');
+      }
+      return;
+    }
+    if (observation.metricType === MetricType.APPLICATIONS_RECEIVED) {
+      if (
+        observation.destinationIso3 !== 'GBR' ||
+        observation.purpose !== VisaPurposeCode.STUDY ||
+        observation.unit !== 'APPLICATIONS'
+      ) {
+        throw new IngestionValidationError('UK_HOME_OFFICE_STUDY_DIMENSIONS_INVALID');
       }
       return;
     }

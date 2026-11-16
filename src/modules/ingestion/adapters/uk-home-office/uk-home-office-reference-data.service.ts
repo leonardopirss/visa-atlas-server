@@ -8,6 +8,9 @@ import {
   UK_HOME_OFFICE_PAGE_URL,
   UK_HOME_OFFICE_SCHEMA_VERSION,
   UK_HOME_OFFICE_SOURCE_ORGANIZATION_ID,
+  UK_HOME_OFFICE_STUDY_DATASET_CODE,
+  UK_HOME_OFFICE_STUDY_DATASET_ID,
+  UK_HOME_OFFICE_STUDY_SCHEMA_VERSION,
 } from './uk-home-office.config.js';
 
 @Injectable()
@@ -25,6 +28,11 @@ export class UkHomeOfficeReferenceDataService {
         where: { code: VisaPurposeCode.WORK },
         create: { code: VisaPurposeCode.WORK, label: 'Trabalho' },
         update: { label: 'Trabalho' },
+      });
+      await transaction.visaPurpose.upsert({
+        where: { code: VisaPurposeCode.STUDY },
+        create: { code: VisaPurposeCode.STUDY, label: 'Estudo' },
+        update: { label: 'Estudo' },
       });
       await transaction.sourceOrganization.upsert({
         where: { id: UK_HOME_OFFICE_SOURCE_ORGANIZATION_ID },
@@ -56,6 +64,24 @@ export class UkHomeOfficeReferenceDataService {
           url: UK_HOME_OFFICE_PAGE_URL,
           methodologyUrl: UK_HOME_OFFICE_METHODOLOGY_URL,
           schemaVersion: UK_HOME_OFFICE_SCHEMA_VERSION,
+        },
+      });
+      await transaction.sourceDataset.upsert({
+        where: { id: UK_HOME_OFFICE_STUDY_DATASET_ID },
+        create: {
+          id: UK_HOME_OFFICE_STUDY_DATASET_ID,
+          organizationId: UK_HOME_OFFICE_SOURCE_ORGANIZATION_ID,
+          code: UK_HOME_OFFICE_STUDY_DATASET_CODE,
+          url: UK_HOME_OFFICE_PAGE_URL,
+          methodologyUrl: UK_HOME_OFFICE_METHODOLOGY_URL,
+          schemaVersion: UK_HOME_OFFICE_STUDY_SCHEMA_VERSION,
+        },
+        update: {
+          organizationId: UK_HOME_OFFICE_SOURCE_ORGANIZATION_ID,
+          code: UK_HOME_OFFICE_STUDY_DATASET_CODE,
+          url: UK_HOME_OFFICE_PAGE_URL,
+          methodologyUrl: UK_HOME_OFFICE_METHODOLOGY_URL,
+          schemaVersion: UK_HOME_OFFICE_STUDY_SCHEMA_VERSION,
         },
       });
     });

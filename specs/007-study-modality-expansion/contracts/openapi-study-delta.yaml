@@ -1,0 +1,31 @@
+components:
+  parameters:
+    Purpose:
+      name: purpose
+      in: query
+      required: false
+      schema:
+        type: string
+        enum: [WORK, STUDY]
+        default: WORK
+  schemas:
+    FilterDefaults:
+      properties:
+        purpose:
+          type: string
+          enum: [WORK, STUDY]
+    MapStatisticsResponse:
+      properties:
+        purpose:
+          type: string
+          enum: [WORK, STUDY]
+    VisaProgram:
+      properties:
+        purpose:
+          type: string
+          enum: [WORK, STUDY]
+    TimeseriesResponse:
+      properties:
+        purpose:
+          type: string
+          enum: [WORK, STUDY]

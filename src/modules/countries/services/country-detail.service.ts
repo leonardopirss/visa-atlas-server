@@ -1,5 +1,5 @@
 import { Injectable, Optional } from '@nestjs/common';
-import { DataStatus, type Prisma, type VisaPurposeCode } from '@prisma/client';
+import { DataStatus, type Prisma } from '@prisma/client';
 import { RedisCacheService } from '../../../common/cache/redis-cache.service.js';
 import type { Statistic } from '../../../common/contracts/public-api.types.js';
 import { PrismaService } from '../../../common/database/prisma.service.js';
@@ -54,7 +54,7 @@ export class CountryDetailService {
     if (!country) throw new ResourceNotFoundError('Country');
     const filters = await this.defaults.resolve({
       citizenship: query.citizenship,
-      purpose: query.purpose as VisaPurposeCode,
+      purpose: query.purpose,
       metricType: query.metricType,
       ...(query.year === undefined ? {} : { year: query.year }),
       ...(query.comparisonGroupId === undefined
@@ -72,7 +72,7 @@ export class CountryDetailService {
           orderBy: { sourceCategoryCode: 'asc' },
         })
       : [];
-    const programs = await this.visaPrograms.listVerified(iso3, query.purpose as VisaPurposeCode);
+    const programs = await this.visaPrograms.listVerified(iso3, query.purpose);
     await this.sources.verifiedLinks(iso3);
 
     return {

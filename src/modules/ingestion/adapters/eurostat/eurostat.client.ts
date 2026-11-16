@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import type { EurostatPayload } from './eurostat.types.js';
-import { EUROSTAT_API_URL } from './eurostat.config.js';
+import { EUROSTAT_API_URL, EUROSTAT_STUDY_API_URL } from './eurostat.config.js';
 import { IngestionValidationError } from '../../validation/ingestion-validation.error.js';
 
 const REQUEST_TIMEOUT_MS = 30_000;
@@ -16,7 +16,15 @@ export interface EurostatReleasePayload {
 @Injectable()
 export class EurostatClient {
   async fetchBrazilWorkRelease(): Promise<EurostatReleasePayload> {
-    const response = await fetch(EUROSTAT_API_URL, {
+    return this.fetchRelease(EUROSTAT_API_URL);
+  }
+
+  async fetchBrazilStudyRelease(): Promise<EurostatReleasePayload> {
+    return this.fetchRelease(EUROSTAT_STUDY_API_URL);
+  }
+
+  private async fetchRelease(url: string): Promise<EurostatReleasePayload> {
+    const response = await fetch(url, {
       headers: { Accept: 'application/json' },
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });

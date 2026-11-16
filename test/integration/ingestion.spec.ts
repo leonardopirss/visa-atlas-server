@@ -3,7 +3,12 @@ import { readFile } from 'node:fs/promises';
 import { DataStatus, ReleaseStatus } from '@prisma/client';
 import { PrismaService } from '../../src/common/database/prisma.service.js';
 import { EurostatAdapter } from '../../src/modules/ingestion/adapters/eurostat/eurostat.adapter.js';
-import { EUROSTAT_BRAZIL_WORK_CONFIG } from '../../src/modules/ingestion/adapters/eurostat/eurostat.config.js';
+import {
+  EUROSTAT_BRAZIL_STUDY_CONFIG,
+  EUROSTAT_BRAZIL_WORK_CONFIG,
+  EUROSTAT_STUDY_DATASET_ID,
+} from '../../src/modules/ingestion/adapters/eurostat/eurostat.config.js';
+import { EurostatReferenceDataService } from '../../src/modules/ingestion/adapters/eurostat/eurostat-reference-data.service.js';
 import type {
   EurostatAdapterConfig,
   EurostatPayload,
@@ -31,11 +36,15 @@ describe('Eurostat ingestion integration', () => {
   const publisher = new PublishReleaseService(database);
   let payload: EurostatPayload;
   let rawPayload: string;
+  let studyPayload: EurostatPayload;
+  let studyRawPayload: string;
 
   beforeAll(async () => {
     await database.$connect();
     rawPayload = await readFile('test/fixtures/eurostat-release.synthetic.json', 'utf8');
     payload = JSON.parse(rawPayload) as EurostatPayload;
+    studyRawPayload = await readFile('test/fixtures/eurostat-study-release.synthetic.json', 'utf8');
+    studyPayload = JSON.parse(studyRawPayload) as EurostatPayload;
   });
 
   beforeEach(async () => {
@@ -100,6 +109,42 @@ describe('Eurostat ingestion integration', () => {
     const second = await ingestion.stage(input);
     expect(second).toEqual({ ...first, duplicate: true });
     expect(await prisma.metricObservation.count()).toBe(countBefore);
+  });
+
+  it('publishes study independently and keeps the work release published', async () => {
+    await new EurostatReferenceDataService(database).synchronize();
+    const observations = adapter.parse(studyPayload, {
+      ...EUROSTAT_BRAZIL_STUDY_CONFIG,
+      destinationIso2ToIso3: { ES: 'ESP', DE: 'DEU', FR: 'FRA' },
+    });
+    const input = {
+      datasetId: EUROSTAT_STUDY_DATASET_ID,
+      rawPayload: studyRawPayload,
+      fetchedAt: new Date('2026-11-16T00:00:00Z'),
+      sourcePublishedAt: new Date('2026-10-19T00:00:00Z'),
+      observations,
+    };
+
+    const staged = await ingestion.stage(input);
+    await publisher.publish(staged.releaseId);
+    const duplicate = await ingestion.stage(input);
+
+    expect(duplicate).toEqual({
+      ...staged,
+      duplicate: true,
+      status: ReleaseStatus.PUBLISHED,
+    });
+    expect(
+      await prisma.datasetRelease.findUnique({ where: { id: staged.releaseId } }),
+    ).toMatchObject({ status: ReleaseStatus.PUBLISHED });
+    expect(
+      await prisma.datasetRelease.findUnique({ where: { id: 'test-release-2025' } }),
+    ).toMatchObject({ status: ReleaseStatus.PUBLISHED });
+    expect(
+      await prisma.metricObservation.findFirst({
+        where: { releaseId: staged.releaseId },
+      }),
+    ).toMatchObject({ purposeCode: 'STUDY', sourceCategoryCode: 'EDUC' });
   });
 
   it('keeps the published snapshot when source parsing fails', async () => {

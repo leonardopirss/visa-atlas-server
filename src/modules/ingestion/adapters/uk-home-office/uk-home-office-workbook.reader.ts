@@ -8,7 +8,7 @@ const MAX_UNCOMPRESSED_BYTES = 100 * 1024 * 1024;
 
 @Injectable()
 export class UkHomeOfficeWorkbookReader {
-  read(buffer: Buffer): UkHomeOfficeRow[] {
+  read(buffer: Buffer, worksheetName = UK_HOME_OFFICE_WORKSHEET): UkHomeOfficeRow[] {
     let archive: Record<string, Uint8Array>;
     try {
       archive = unzipSync(new Uint8Array(buffer));
@@ -25,7 +25,7 @@ export class UkHomeOfficeWorkbookReader {
 
     const workbook = this.text(archive, 'xl/workbook.xml');
     const relationships = this.text(archive, 'xl/_rels/workbook.xml.rels');
-    const relationshipId = this.sheetRelationshipId(workbook);
+    const relationshipId = this.sheetRelationshipId(workbook, worksheetName);
     const target = this.relationshipTarget(relationships, relationshipId);
     const sheetPath = target.startsWith('/')
       ? target.slice(1)
@@ -43,8 +43,8 @@ export class UkHomeOfficeWorkbookReader {
     return new TextDecoder().decode(entry);
   }
 
-  private sheetRelationshipId(workbook: string): string {
-    const escapedName = UK_HOME_OFFICE_WORKSHEET.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  private sheetRelationshipId(workbook: string, worksheetName: string): string {
+    const escapedName = worksheetName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const match = workbook.match(
       new RegExp(`<sheet\\b[^>]*name="${escapedName}"[^>]*r:id="([^"]+)"[^>]*/?>`, 'i'),
     );

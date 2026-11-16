@@ -30,4 +30,22 @@ describe('IRCC Canada client', () => {
       'IRCC_CANADA_CONTENT_TYPE_INVALID',
     );
   });
+
+  it('usa a fonte oficial separada para titulares de permissão de estudo', async () => {
+    const workbook = Buffer.from('PK synthetic study workbook');
+    const fetchMock = jest.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(workbook, {
+        headers: {
+          'content-type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        },
+      }),
+    );
+    await expect(new IrccCanadaClient().fetchBrazilStudyRelease()).resolves.toMatchObject({
+      workbook,
+    });
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining('annual-TR-Study-IS_CITZ_year_end.xlsx'),
+      expect.any(Object),
+    );
+  });
 });

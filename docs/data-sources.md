@@ -117,3 +117,15 @@ O frontend publica uma auditoria de fontes e licenças acessível pelo rodapé,
 com data da última verificação, permissão comercial, atribuição, condições de
 reutilização e aviso de ausência de endosso governamental. A mesma auditoria
 documenta Natural Earth, `mledoze/countries` e Unicode CLDR.
+
+## Modalidade Estudo
+
+O recorte `BRA / STUDY` mantém um dataset separado por fonte, para que a promoção
+atômica de uma release de estudo nunca substitua a publicação de trabalho.
+
+- Europa usa o Eurostat [`migr_resedu`](https://ec.europa.eu/eurostat/databrowser/view/migr_resedu/default/table), categoria `EDUC`, métrica `FIRST_RESIDENCE_PERMITS_GRANTED` e unidade `PER`.
+- Reino Unido usa `Edu_D01/Data_Edu_D01`, agrega somente anos com Q1–Q4 e publica `APPLICATIONS_RECEIVED` em `APPLICATIONS`. Pedidos recebidos não são rotulados como vistos concedidos.
+- Canadá usa o recurso IRCC “Study permit holders on December 31st by country of citizenship”, com `VALID_PERMIT_HOLDERS`, unidade `HOLDERS`, arredondamento oficial e `--` preservado como supressão.
+
+Esses três indicadores não são somados ou ranqueados juntos: representam eventos,
+universos, unidades e metodologias diferentes.

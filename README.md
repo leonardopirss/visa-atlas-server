@@ -1,6 +1,6 @@
 # Visa Atlas API
 
-Visa Atlas is a public API for exploring official migration indicators by destination country. Its current scope is Brazilian citizenship (`BRA`) and work as the migration purpose (`WORK`), with safeguards against mixing incompatible metrics, units, periods, or methodologies.
+Visa Atlas is a public API for exploring official migration indicators by destination country. Its current scope is Brazilian citizenship (`BRA`) with work (`WORK`) and study (`STUDY`) as migration purposes, with safeguards against mixing incompatible metrics, units, periods, or methodologies.
 
 The service is built with NestJS 12, strict TypeScript, PostgreSQL, and Prisma. It maintains a worldwide catalog of 249 countries, publishes only validated dataset releases, and exposes five versioned HTTP operations under `/api/v1`.
 
@@ -24,13 +24,16 @@ The service is built with NestJS 12, strict TypeScript, PostgreSQL, and Prisma. 
 
 ## Current scope
 
-The backend serves the global `BRA / WORK` MVP and explicitly distinguishes three statistical domains:
+The backend serves `BRA / WORK` and `BRA / STUDY` and explicitly distinguishes each statistical domain:
 
-| Destinations                 | Source                        | Metric                            | Unit      | Meaning                                                |
-| ---------------------------- | ----------------------------- | --------------------------------- | --------- | ------------------------------------------------------ |
-| European reporting countries | Eurostat `migr_resfirst`      | `FIRST_RESIDENCE_PERMITS_GRANTED` | `PER`     | First residence permits granted for employment reasons |
-| United Kingdom               | UK Home Office `Occ_D02`      | `WORK_VISAS_ISSUED`               | `VISAS`   | Sponsored work visa grants by visa subgroup            |
-| Canada                       | IRCC `IMP_CITZ_YEAR_END_WORK` | `VALID_PERMIT_HOLDERS`            | `HOLDERS` | IMP holders with a valid work permit on December 31    |
+| Destinations                 | Source                        | Metric                            | Unit           | Meaning                                                 |
+| ---------------------------- | ----------------------------- | --------------------------------- | -------------- | ------------------------------------------------------- |
+| European reporting countries | Eurostat `migr_resfirst`      | `FIRST_RESIDENCE_PERMITS_GRANTED` | `PER`          | First residence permits granted for employment reasons  |
+| United Kingdom               | UK Home Office `Occ_D02`      | `WORK_VISAS_ISSUED`               | `VISAS`        | Sponsored work visa grants by visa subgroup             |
+| Canada                       | IRCC `IMP_CITZ_YEAR_END_WORK` | `VALID_PERMIT_HOLDERS`            | `HOLDERS`      | IMP holders with a valid work permit on December 31     |
+| European reporting countries | Eurostat `migr_resedu`        | `FIRST_RESIDENCE_PERMITS_GRANTED` | `PER`          | First residence permits granted for education reasons   |
+| United Kingdom               | UK Home Office `Edu_D01`      | `APPLICATIONS_RECEIVED`           | `APPLICATIONS` | Sponsored study entry-clearance applications            |
+| Canada                       | IRCC `STUDY_CITZ_YEAR_END`    | `VALID_PERMIT_HOLDERS`            | `HOLDERS`      | Study-permit holders with a valid permit on December 31 |
 
 These figures are not approval rates, individual probabilities, or measurements that can be compared directly across sources. Every observation retains its dataset, release, original source category, unit, and `comparisonGroupId`.
 
@@ -403,8 +406,11 @@ Each command builds the application, downloads the official source, validates it
 
 ```bash
 npm run ingest:eurostat
+npm run ingest:eurostat:study
 npm run ingest:uk-home-office
+npm run ingest:uk-home-office:study
 npm run ingest:ircc-canada
+npm run ingest:ircc-canada:study
 ```
 
 The UK Home Office CLI also accepts a pinned official asset:

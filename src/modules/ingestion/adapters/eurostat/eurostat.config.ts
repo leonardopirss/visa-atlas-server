@@ -10,6 +10,12 @@ export const EUROSTAT_METHODOLOGY_URL =
   'https://ec.europa.eu/eurostat/cache/metadata/en/migr_res_esms.htm';
 export const EUROSTAT_API_URL =
   'https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/migr_resfirst?format=JSON&lang=EN&freq=A&unit=PER&reason=EMP&duration=TOTAL&citizen=BR&geoLevel=country';
+export const EUROSTAT_STUDY_DATASET_ID = 'migr-resedu';
+export const EUROSTAT_STUDY_DATASET_CODE = 'migr_resedu';
+export const EUROSTAT_STUDY_DATASET_URL =
+  'https://ec.europa.eu/eurostat/databrowser/view/migr_resedu/default/table';
+export const EUROSTAT_STUDY_API_URL =
+  'https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/migr_resedu?format=JSON&lang=EN&freq=A&unit=PER&reason=EDUC&duration=TOTAL&citizen=BR&geoLevel=country';
 
 export interface EurostatDestination {
   iso3: string;
@@ -61,10 +67,16 @@ export const EUROSTAT_BRAZIL_WORK_CONFIG: EurostatAdapterConfig = {
   purposeDimension: 'reason',
   periodDimension: 'time',
   unitDimension: 'unit',
-  workCategoryCodes: ['EMP'],
+  purposeCategoryCodes: ['EMP'],
   countUnitCodes: ['PER'],
   destinationIso2ToIso3,
   citizenshipIso2ToIso3: { BR: 'BRA' },
   metricType: MetricType.FIRST_RESIDENCE_PERMITS_GRANTED,
   purpose: VisaPurposeCode.WORK,
+};
+
+export const EUROSTAT_BRAZIL_STUDY_CONFIG: EurostatAdapterConfig = {
+  ...EUROSTAT_BRAZIL_WORK_CONFIG,
+  purposeCategoryCodes: ['EDUC'],
+  purpose: VisaPurposeCode.STUDY,
 };

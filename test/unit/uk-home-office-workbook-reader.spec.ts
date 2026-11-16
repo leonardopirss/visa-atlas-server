@@ -34,4 +34,24 @@ describe('UK Home Office XLSX reader', () => {
       'UK_HOME_OFFICE_WORKSHEET_MISSING',
     );
   });
+
+  it('permite selecionar a planilha Edu_D01 explicitamente', () => {
+    const workbook = Buffer.from(
+      zipSync({
+        'xl/workbook.xml': strToU8(
+          '<workbook xmlns:r="relationships"><sheets><sheet name="Data_Edu_D01" r:id="rId6"/></sheets></workbook>',
+        ),
+        'xl/_rels/workbook.xml.rels': strToU8(
+          '<Relationships><Relationship Id="rId6" Target="worksheets/sheet6.xml"/></Relationships>',
+        ),
+        'xl/worksheets/sheet6.xml': strToU8(
+          '<worksheet><sheetData><row r="1"><c r="A1"><v>2025</v></c><c r="G1"><v>12</v></c></row></sheetData></worksheet>',
+        ),
+      }),
+    );
+
+    expect(new UkHomeOfficeWorkbookReader().read(workbook, 'Data_Edu_D01')).toEqual([
+      [2025, undefined, undefined, undefined, undefined, undefined, 12],
+    ]);
+  });
 });

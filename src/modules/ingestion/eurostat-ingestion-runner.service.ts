@@ -3,6 +3,8 @@ import { ReleaseStatus } from '@prisma/client';
 import {
   EUROSTAT_BRAZIL_WORK_CONFIG,
   EUROSTAT_DATASET_ID,
+  EUROSTAT_BRAZIL_STUDY_CONFIG,
+  EUROSTAT_STUDY_DATASET_ID,
 } from './adapters/eurostat/eurostat.config.js';
 import { EurostatAdapter } from './adapters/eurostat/eurostat.adapter.js';
 import { EurostatClient } from './adapters/eurostat/eurostat.client.js';
@@ -31,10 +33,23 @@ export class EurostatIngestionRunner {
 
   async run(): Promise<EurostatIngestionResult> {
     const release = await this.client.fetchBrazilWorkRelease();
-    const observations = this.adapter.parse(release.payload, EUROSTAT_BRAZIL_WORK_CONFIG);
+    return this.publishRelease(EUROSTAT_DATASET_ID, release, EUROSTAT_BRAZIL_WORK_CONFIG);
+  }
+
+  async runStudy(): Promise<EurostatIngestionResult> {
+    const release = await this.client.fetchBrazilStudyRelease();
+    return this.publishRelease(EUROSTAT_STUDY_DATASET_ID, release, EUROSTAT_BRAZIL_STUDY_CONFIG);
+  }
+
+  private async publishRelease(
+    datasetId: string,
+    release: Awaited<ReturnType<EurostatClient['fetchBrazilWorkRelease']>>,
+    config: typeof EUROSTAT_BRAZIL_WORK_CONFIG,
+  ): Promise<EurostatIngestionResult> {
+    const observations = this.adapter.parse(release.payload, config);
     await this.referenceData.synchronize();
     const staged = await this.ingestion.stage({
-      datasetId: EUROSTAT_DATASET_ID,
+      datasetId,
       rawPayload: release.rawPayload,
       fetchedAt: release.fetchedAt,
       sourcePublishedAt: release.sourcePublishedAt,

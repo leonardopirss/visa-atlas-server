@@ -7,6 +7,10 @@ import {
   IRCC_CANADA_DATASET_PAGE_URL,
   IRCC_CANADA_SCHEMA_VERSION,
   IRCC_CANADA_SOURCE_ORGANIZATION_ID,
+  IRCC_CANADA_STUDY_DATASET_CODE,
+  IRCC_CANADA_STUDY_DATASET_ID,
+  IRCC_CANADA_STUDY_DATASET_PAGE_URL,
+  IRCC_CANADA_STUDY_SCHEMA_VERSION,
 } from './ircc-canada.config.js';
 
 @Injectable()
@@ -29,6 +33,11 @@ export class IrccCanadaReferenceDataService {
         where: { code: VisaPurposeCode.WORK },
         create: { code: VisaPurposeCode.WORK, label: 'Trabalho' },
         update: { label: 'Trabalho' },
+      });
+      await transaction.visaPurpose.upsert({
+        where: { code: VisaPurposeCode.STUDY },
+        create: { code: VisaPurposeCode.STUDY, label: 'Estudo' },
+        update: { label: 'Estudo' },
       });
       await transaction.sourceOrganization.upsert({
         where: { id: IRCC_CANADA_SOURCE_ORGANIZATION_ID },
@@ -60,6 +69,24 @@ export class IrccCanadaReferenceDataService {
           url: IRCC_CANADA_DATASET_PAGE_URL,
           methodologyUrl: IRCC_CANADA_DATASET_PAGE_URL,
           schemaVersion: IRCC_CANADA_SCHEMA_VERSION,
+        },
+      });
+      await transaction.sourceDataset.upsert({
+        where: { id: IRCC_CANADA_STUDY_DATASET_ID },
+        create: {
+          id: IRCC_CANADA_STUDY_DATASET_ID,
+          organizationId: IRCC_CANADA_SOURCE_ORGANIZATION_ID,
+          code: IRCC_CANADA_STUDY_DATASET_CODE,
+          url: IRCC_CANADA_STUDY_DATASET_PAGE_URL,
+          methodologyUrl: IRCC_CANADA_STUDY_DATASET_PAGE_URL,
+          schemaVersion: IRCC_CANADA_STUDY_SCHEMA_VERSION,
+        },
+        update: {
+          organizationId: IRCC_CANADA_SOURCE_ORGANIZATION_ID,
+          code: IRCC_CANADA_STUDY_DATASET_CODE,
+          url: IRCC_CANADA_STUDY_DATASET_PAGE_URL,
+          methodologyUrl: IRCC_CANADA_STUDY_DATASET_PAGE_URL,
+          schemaVersion: IRCC_CANADA_STUDY_SCHEMA_VERSION,
         },
       });
     });

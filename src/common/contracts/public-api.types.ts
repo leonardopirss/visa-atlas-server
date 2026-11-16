@@ -1,6 +1,6 @@
-import { DataStatus, MetricType, SponsorshipRequirement } from '@prisma/client';
+import { DataStatus, MetricType, SponsorshipRequirement, VisaPurposeCode } from '@prisma/client';
 
-export { DataStatus, MetricType, SponsorshipRequirement };
+export { DataStatus, MetricType, SponsorshipRequirement, VisaPurposeCode };
 
 export type Freshness = 'CURRENT' | 'STALE';
 
@@ -33,5 +33,5 @@ export interface CountryDto {
 }
 
 export const DEFAULT_CITIZENSHIP = 'BRA';
-export const DEFAULT_PURPOSE = 'WORK' as const;
+export const DEFAULT_PURPOSE = VisaPurposeCode.WORK;
 export const DEFAULT_METRIC_TYPE = MetricType.FIRST_RESIDENCE_PERMITS_GRANTED;

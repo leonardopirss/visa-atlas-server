@@ -1,11 +1,7 @@
 import { Injectable, Optional } from '@nestjs/common';
 import type { MetricType, VisaPurposeCode } from '@prisma/client';
 import { RedisCacheService } from '../../../common/cache/redis-cache.service.js';
-import {
-  DEFAULT_CITIZENSHIP,
-  DEFAULT_METRIC_TYPE,
-  DEFAULT_PURPOSE,
-} from '../../../common/contracts/public-api.types.js';
+import type { DefaultFiltersQueryDto } from '../../../common/dto/statistics-query.dto.js';
 import { IncompatibleDimensionsError } from '../../../common/errors/domain.error.js';
 import { PrismaService } from '../../../common/database/prisma.service.js';
 import { PublishedReleaseVersionService } from './published-release-version.service.js';
@@ -35,23 +31,27 @@ export class DefaultFiltersService {
     @Optional() private readonly releaseVersion?: PublishedReleaseVersionService,
   ) {}
 
-  async getDefaults(): Promise<ResolvedFilters & { dataAvailable: boolean }> {
-    if (!this.cache?.isEnabled || !this.releaseVersion) return this.loadDefaults();
+  async getDefaults(
+    request: DefaultFiltersQueryDto,
+  ): Promise<ResolvedFilters & { dataAvailable: boolean }> {
+    if (!this.cache?.isEnabled || !this.releaseVersion) return this.loadDefaults(request);
     const version = await this.releaseVersion.current();
     return this.cache.getOrLoad({
       group: 'defaults',
       route: 'filter-defaults',
       releaseVersion: version,
-      query: {},
-      load: () => this.loadDefaults(),
+      query: request,
+      load: () => this.loadDefaults(request),
     });
   }
 
-  private async loadDefaults(): Promise<ResolvedFilters & { dataAvailable: boolean }> {
+  private async loadDefaults(
+    request: DefaultFiltersQueryDto,
+  ): Promise<ResolvedFilters & { dataAvailable: boolean }> {
     const filters = await this.resolve({
-      citizenship: DEFAULT_CITIZENSHIP,
-      purpose: DEFAULT_PURPOSE,
-      metricType: DEFAULT_METRIC_TYPE,
+      citizenship: request.citizenship,
+      purpose: request.purpose,
+      metricType: request.metricType,
     });
     return { ...filters, dataAvailable: filters.year !== null };
   }
