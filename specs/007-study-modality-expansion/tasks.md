@@ -89,7 +89,7 @@
 - [x] T039 Executar format, lint, typecheck, unit, integração, contrato e build no backend
 - [x] T040 Executar format, lint, typecheck, Vitest, build e Playwright real no frontend
 - [x] T041 Revisar segurança, licenças, semântica, diffs e registrar evidências finais no `quickstart.md`
-- [ ] T042 Criar commits e PRs separados para backend e frontend, sem incluir mudanças locais fora do escopo
+- [x] T042 Criar commits e PRs separados para backend e frontend, sem incluir mudanças locais fora do escopo
 
 ## Dependencies & Execution Order
 

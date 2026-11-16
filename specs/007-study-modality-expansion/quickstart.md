@@ -38,3 +38,4 @@ Validado com o workbook anual por cidadania, métrica `VALID_PERMIT_HOLDERS`, es
 - Frontend: 68 testes Vitest verdes; Playwright real com API e PostgreSQL locais, 6/6 cenários verdes.
 - Tooltip do histórico validado por hover no ano anterior, com valor em branco; indicador `Todos os países` e finalidade `Estudo` validados no fluxo real.
 - Limitação local externa à feature: `prisma migrate deploy` completo permanece bloqueado pela pasta preexistente `20261116010000_lock_supabase_access_to_api`, que não possui `migration.sql`. A migration desta feature foi validada pela geração Prisma e por `db push` no schema isolado, sem alterar a pasta alheia.
+- PRs: backend https://github.com/leonardopirss/visa-atlas-server/pull/19 e frontend https://github.com/leonardopirss/visa-atlas-client/pull/18.
