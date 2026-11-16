@@ -66,15 +66,16 @@ jobs:
             echo "::error::Missing FLY_API_TOKEN in the GitHub production environment"
             exit 1
           fi
-          if [ -z "$MIGRATION_DATABASE_URL" ]; then
+          if [ -z "$DATABASE_URL" ]; then
             echo "::error::Missing MIGRATION_DATABASE_URL in the GitHub production environment"
             exit 1
           fi
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-          MIGRATION_DATABASE_URL: ${{ secrets.MIGRATION_DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.MIGRATION_DATABASE_URL }}
       - name: Apply Supabase migrations
         run: npm run prisma:migrate
+        timeout-minutes: 3
         env:
           DATABASE_URL: ${{ secrets.MIGRATION_DATABASE_URL }}
       - uses: superfly/flyctl-actions/setup-flyctl@1.5
