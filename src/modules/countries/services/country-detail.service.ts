@@ -1,5 +1,5 @@
 import { Injectable, Optional } from '@nestjs/common';
-import { DataStatus, type Prisma } from '@prisma/client';
+import { DataStatus } from '@prisma/client';
 import { RedisCacheService } from '../../../common/cache/redis-cache.service.js';
 import type { Statistic } from '../../../common/contracts/public-api.types.js';
 import { PrismaService } from '../../../common/database/prisma.service.js';
@@ -10,14 +10,11 @@ import { SourcesService } from '../../sources/sources.service.js';
 import { DefaultFiltersService } from '../../statistics/services/default-filters.service.js';
 import { PublishedReleaseVersionService } from '../../statistics/services/published-release-version.service.js';
 import {
+  OBSERVATION_INCLUDE,
   presentAggregateStatistic,
   presentStatistic,
 } from '../../statistics/services/statistic.presenter.js';
 import { VisaProgramsService } from '../../visa-programs/visa-programs.service.js';
-
-const OBSERVATION_INCLUDE = {
-  release: { include: { dataset: { include: { organization: true } } } },
-} satisfies Prisma.MetricObservationInclude;
 
 @Injectable()
 export class CountryDetailService {
@@ -53,7 +50,9 @@ export class CountryDetailService {
     const country = await this.prisma.country.findUnique({ where: { iso3 } });
     if (!country) throw new ResourceNotFoundError('Country');
     const filters = await this.defaults.resolve({
-      citizenship: query.citizenship,
+      ...(query.citizenship === undefined ? {} : { citizenship: query.citizenship }),
+      ...(query.populationBasis === undefined ? {} : { populationBasis: query.populationBasis }),
+      ...(query.programKey === undefined ? {} : { programKey: query.programKey }),
       purpose: query.purpose,
       metricType: query.metricType,
       ...(query.year === undefined ? {} : { year: query.year }),

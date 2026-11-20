@@ -1,6 +1,7 @@
 import {
   DataStatus,
   MetricType,
+  PopulationBasis,
   PrismaClient,
   ReleaseStatus,
   SponsorshipRequirement,
@@ -77,6 +78,9 @@ export async function seedPublishedFixture(): Promise<void> {
       id: 'test-comparable-2025',
       datasetId: 'migr-resfirst',
       metricType: MetricType.FIRST_RESIDENCE_PERMITS_GRANTED,
+      populationBasis: PopulationBasis.CITIZENSHIP,
+      populationKey: 'BRA',
+      programKey: 'ALL',
       citizenshipIso3: 'BRA',
       purposeCode: VisaPurposeCode.WORK,
       period: '2025',
@@ -98,6 +102,9 @@ export async function seedPublishedFixture(): Promise<void> {
         create: [
           {
             destinationIso3: 'ESP',
+            populationBasis: PopulationBasis.CITIZENSHIP,
+            populationKey: 'BRA',
+            programKey: 'ALL',
             citizenshipIso3: 'BRA',
             purposeCode: VisaPurposeCode.WORK,
             metricType: MetricType.FIRST_RESIDENCE_PERMITS_GRANTED,
@@ -111,6 +118,9 @@ export async function seedPublishedFixture(): Promise<void> {
           },
           {
             destinationIso3: 'DEU',
+            populationBasis: PopulationBasis.CITIZENSHIP,
+            populationKey: 'BRA',
+            programKey: 'ALL',
             citizenshipIso3: 'BRA',
             purposeCode: VisaPurposeCode.WORK,
             metricType: MetricType.FIRST_RESIDENCE_PERMITS_GRANTED,
@@ -124,6 +134,9 @@ export async function seedPublishedFixture(): Promise<void> {
           },
           {
             destinationIso3: 'FRA',
+            populationBasis: PopulationBasis.CITIZENSHIP,
+            populationKey: 'BRA',
+            programKey: 'ALL',
             citizenshipIso3: 'BRA',
             purposeCode: VisaPurposeCode.WORK,
             metricType: MetricType.FIRST_RESIDENCE_PERMITS_GRANTED,
@@ -179,6 +192,9 @@ export async function seedPublishedStudyFixture(): Promise<void> {
         id: 'test-study-2024',
         datasetId: 'migr-resedu',
         metricType: MetricType.FIRST_RESIDENCE_PERMITS_GRANTED,
+        populationBasis: PopulationBasis.CITIZENSHIP,
+        populationKey: 'BRA',
+        programKey: 'ALL',
         citizenshipIso3: 'BRA',
         purposeCode: VisaPurposeCode.STUDY,
         period: '2024',
@@ -189,6 +205,9 @@ export async function seedPublishedStudyFixture(): Promise<void> {
         id: 'test-study-2025',
         datasetId: 'migr-resedu',
         metricType: MetricType.FIRST_RESIDENCE_PERMITS_GRANTED,
+        populationBasis: PopulationBasis.CITIZENSHIP,
+        populationKey: 'BRA',
+        programKey: 'ALL',
         citizenshipIso3: 'BRA',
         purposeCode: VisaPurposeCode.STUDY,
         period: '2025',
@@ -211,6 +230,9 @@ export async function seedPublishedStudyFixture(): Promise<void> {
         create: [
           {
             destinationIso3: 'ESP',
+            populationBasis: PopulationBasis.CITIZENSHIP,
+            populationKey: 'BRA',
+            programKey: 'ALL',
             citizenshipIso3: 'BRA',
             purposeCode: VisaPurposeCode.STUDY,
             metricType: MetricType.FIRST_RESIDENCE_PERMITS_GRANTED,
@@ -224,6 +246,9 @@ export async function seedPublishedStudyFixture(): Promise<void> {
           },
           {
             destinationIso3: 'DEU',
+            populationBasis: PopulationBasis.CITIZENSHIP,
+            populationKey: 'BRA',
+            programKey: 'ALL',
             citizenshipIso3: 'BRA',
             purposeCode: VisaPurposeCode.STUDY,
             metricType: MetricType.FIRST_RESIDENCE_PERMITS_GRANTED,
@@ -237,6 +262,9 @@ export async function seedPublishedStudyFixture(): Promise<void> {
           },
           {
             destinationIso3: 'ESP',
+            populationBasis: PopulationBasis.CITIZENSHIP,
+            populationKey: 'BRA',
+            programKey: 'ALL',
             citizenshipIso3: 'BRA',
             purposeCode: VisaPurposeCode.STUDY,
             metricType: MetricType.FIRST_RESIDENCE_PERMITS_GRANTED,
@@ -250,6 +278,9 @@ export async function seedPublishedStudyFixture(): Promise<void> {
           },
           {
             destinationIso3: 'DEU',
+            populationBasis: PopulationBasis.CITIZENSHIP,
+            populationKey: 'BRA',
+            programKey: 'ALL',
             citizenshipIso3: 'BRA',
             purposeCode: VisaPurposeCode.STUDY,
             metricType: MetricType.FIRST_RESIDENCE_PERMITS_GRANTED,
@@ -329,6 +360,9 @@ export async function seedDestinationComparisonFixture(): Promise<void> {
         id: 'uk-work-visas-test-2025',
         datasetId: 'uk-work-visas-test',
         metricType: MetricType.WORK_VISAS_ISSUED,
+        populationBasis: PopulationBasis.CITIZENSHIP,
+        populationKey: 'BRA',
+        programKey: 'ALL',
         citizenshipIso3: 'BRA',
         purposeCode: VisaPurposeCode.WORK,
         period: '2025',
@@ -339,6 +373,9 @@ export async function seedDestinationComparisonFixture(): Promise<void> {
         id: 'canada-imp-test-2024',
         datasetId: 'canada-imp-test',
         metricType: MetricType.VALID_PERMIT_HOLDERS,
+        populationBasis: PopulationBasis.CITIZENSHIP,
+        populationKey: 'BRA',
+        programKey: 'ALL',
         citizenshipIso3: 'BRA',
         purposeCode: VisaPurposeCode.WORK,
         period: '2024',
@@ -349,6 +386,9 @@ export async function seedDestinationComparisonFixture(): Promise<void> {
         id: 'uk-study-visas-test-2025',
         datasetId: 'uk-study-visas-test',
         metricType: MetricType.APPLICATIONS_RECEIVED,
+        populationBasis: PopulationBasis.CITIZENSHIP,
+        populationKey: 'BRA',
+        programKey: 'ALL',
         citizenshipIso3: 'BRA',
         purposeCode: VisaPurposeCode.STUDY,
         period: '2025',
@@ -359,6 +399,9 @@ export async function seedDestinationComparisonFixture(): Promise<void> {
         id: 'canada-study-test-2024',
         datasetId: 'canada-study-test',
         metricType: MetricType.VALID_PERMIT_HOLDERS,
+        populationBasis: PopulationBasis.CITIZENSHIP,
+        populationKey: 'BRA',
+        programKey: 'ALL',
         citizenshipIso3: 'BRA',
         purposeCode: VisaPurposeCode.STUDY,
         period: '2024',
@@ -380,6 +423,9 @@ export async function seedDestinationComparisonFixture(): Promise<void> {
       observations: {
         create: {
           destinationIso3: 'GBR',
+          populationBasis: PopulationBasis.CITIZENSHIP,
+          populationKey: 'BRA',
+          programKey: 'ALL',
           citizenshipIso3: 'BRA',
           purposeCode: VisaPurposeCode.WORK,
           metricType: MetricType.WORK_VISAS_ISSUED,
@@ -407,6 +453,9 @@ export async function seedDestinationComparisonFixture(): Promise<void> {
       observations: {
         create: {
           destinationIso3: 'CAN',
+          populationBasis: PopulationBasis.CITIZENSHIP,
+          populationKey: 'BRA',
+          programKey: 'ALL',
           citizenshipIso3: 'BRA',
           purposeCode: VisaPurposeCode.WORK,
           metricType: MetricType.VALID_PERMIT_HOLDERS,
@@ -434,6 +483,9 @@ export async function seedDestinationComparisonFixture(): Promise<void> {
       observations: {
         create: {
           destinationIso3: 'GBR',
+          populationBasis: PopulationBasis.CITIZENSHIP,
+          populationKey: 'BRA',
+          programKey: 'ALL',
           citizenshipIso3: 'BRA',
           purposeCode: VisaPurposeCode.STUDY,
           metricType: MetricType.APPLICATIONS_RECEIVED,
@@ -461,6 +513,9 @@ export async function seedDestinationComparisonFixture(): Promise<void> {
       observations: {
         create: {
           destinationIso3: 'CAN',
+          populationBasis: PopulationBasis.CITIZENSHIP,
+          populationKey: 'BRA',
+          programKey: 'ALL',
           citizenshipIso3: 'BRA',
           purposeCode: VisaPurposeCode.STUDY,
           metricType: MetricType.VALID_PERMIT_HOLDERS,
@@ -475,4 +530,133 @@ export async function seedDestinationComparisonFixture(): Promise<void> {
       },
     },
   });
+}
+
+export async function seedVisaDecisionInsightsFixture(): Promise<void> {
+  const datasetId = 'uk-vis-decisions-e2e';
+  const programKey = 'uk-entry-clearance:work';
+  const methodologyVersion = 'synthetic-vis-d02-e2e-v1';
+  await prisma.sourceDataset.create({
+    data: {
+      id: datasetId,
+      organizationId: 'uk-home-office-test',
+      code: 'Vis_D02_E2E_SYNTHETIC',
+      url: 'https://www.gov.uk/government/statistical-data-sets/immigration-system-statistics-data-tables',
+      methodologyUrl:
+        'https://www.gov.uk/government/publications/immigration-system-statistics-user-guide',
+      schemaVersion: methodologyVersion,
+    },
+  });
+  await prisma.comparisonGroup.createMany({
+    data: [2024, 2025].flatMap((year) =>
+      (
+        [
+          [MetricType.DECISIONS_GRANTED, 'COUNT', 'granted'],
+          [MetricType.DECISIONS_REFUSED, 'COUNT', 'refused'],
+          [MetricType.APPROVAL_RATE, 'BASIS_POINTS', 'approval'],
+        ] as const
+      ).map(([metricType, unit, slug]) => ({
+        id: `e2e-vis-d02-${slug}-${year}`,
+        datasetId,
+        metricType: metricType as MetricType,
+        populationBasis: PopulationBasis.CITIZENSHIP,
+        populationKey: 'BRA',
+        programKey,
+        citizenshipIso3: 'BRA',
+        purposeCode: VisaPurposeCode.WORK,
+        period: String(year),
+        unit,
+        methodologyVersion,
+      })),
+    ),
+  });
+  const release = await prisma.datasetRelease.create({
+    data: {
+      id: 'e2e-vis-d02-release',
+      datasetId,
+      sourcePublishedAt: new Date('2026-11-10T00:00:00Z'),
+      fetchedAt: new Date('2026-11-17T00:00:00Z'),
+      validatedAt: new Date('2026-11-17T00:00:00Z'),
+      publishedAt: new Date('2026-11-17T00:00:00Z'),
+      checksum: 'synthetic-vis-d02-e2e-release',
+      status: ReleaseStatus.PUBLISHED,
+      qualityReport: {
+        fixture: 'synthetic-e2e',
+        warning: 'Not production data',
+      },
+    },
+  });
+
+  for (const [year, grantedValue, refusedValue] of [
+    [2024, 2n, 2n],
+    [2025, 3n, 1n],
+  ] as const) {
+    const common = {
+      releaseId: release.id,
+      destinationIso3: 'GBR',
+      populationBasis: PopulationBasis.CITIZENSHIP,
+      populationKey: 'BRA',
+      programKey,
+      citizenshipIso3: 'BRA',
+      purposeCode: VisaPurposeCode.WORK,
+      period: String(year),
+      unit: 'COUNT',
+      dataStatus: DataStatus.AVAILABLE,
+      sourceCategoryCode: 'Worker:Skilled Worker',
+      sourceCategoryLabel: 'Worker — Skilled Worker',
+    } as const;
+    const granted = await prisma.metricObservation.create({
+      data: {
+        ...common,
+        metricType: MetricType.DECISIONS_GRANTED,
+        value: grantedValue,
+        comparisonGroupId: `e2e-vis-d02-granted-${year}`,
+      },
+    });
+    const refused = await prisma.metricObservation.create({
+      data: {
+        ...common,
+        metricType: MetricType.DECISIONS_REFUSED,
+        value: refusedValue,
+        comparisonGroupId: `e2e-vis-d02-refused-${year}`,
+      },
+    });
+    const rate = await prisma.metricObservation.create({
+      data: {
+        ...common,
+        metricType: MetricType.APPROVAL_RATE,
+        sourceCategoryCode: `DERIVED:${programKey}`,
+        sourceCategoryLabel: 'Conjunto revisado de modalidades · taxa derivada',
+        unit: 'BASIS_POINTS',
+        value: year === 2025 ? 7_500n : 5_000n,
+        precision: 2,
+        comparisonGroupId: `e2e-vis-d02-approval-${year}`,
+      },
+    });
+    await prisma.metricDerivation.create({
+      data: {
+        observationId: rate.id,
+        formula: 'APPROVAL_RATE',
+        precision: 2,
+        validatedAt: new Date('2026-11-17T00:00:00Z'),
+        qualityReport: { fixture: 'synthetic-e2e', arithmetic: 'integer-half-up' },
+        operands: {
+          create: [
+            {
+              observationId: granted.id,
+              role: 'NUMERATOR_COMPONENT',
+            },
+            {
+              observationId: granted.id,
+              role: 'DENOMINATOR_COMPONENT',
+            },
+            {
+              observationId: refused.id,
+              role: 'DENOMINATOR_COMPONENT',
+            },
+          ],
+        },
+      },
+    });
+  }
 }

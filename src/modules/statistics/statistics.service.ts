@@ -1,5 +1,5 @@
 import { Injectable, Optional } from '@nestjs/common';
-import { DataStatus, type Prisma, type VisaPurposeCode } from '@prisma/client';
+import { DataStatus, type VisaPurposeCode } from '@prisma/client';
 import { RedisCacheService } from '../../common/cache/redis-cache.service.js';
 import type { Statistic } from '../../common/contracts/public-api.types.js';
 import type { StatisticsQueryDto } from '../../common/dto/statistics-query.dto.js';
@@ -7,11 +7,7 @@ import { PrismaService } from '../../common/database/prisma.service.js';
 import { QueryConcurrencyService } from '../../common/database/query-concurrency.service.js';
 import { DefaultFiltersService } from './services/default-filters.service.js';
 import { PublishedReleaseVersionService } from './services/published-release-version.service.js';
-import { presentAggregateStatistic } from './services/statistic.presenter.js';
-
-const OBSERVATION_INCLUDE = {
-  release: { include: { dataset: { include: { organization: true } } } },
-} satisfies Prisma.MetricObservationInclude;
+import { OBSERVATION_INCLUDE, presentAggregateStatistic } from './services/statistic.presenter.js';
 
 @Injectable()
 export class StatisticsService {
@@ -24,7 +20,9 @@ export class StatisticsService {
   ) {}
 
   async getMap(query: StatisticsQueryDto): Promise<{
-    citizenship: string;
+    citizenship: string | null;
+    populationBasis: 'CITIZENSHIP' | 'NATIONAL';
+    programKey: string;
     purpose: VisaPurposeCode;
     year: number | null;
     countries: Array<{ iso3: string; statistic: Statistic }>;
@@ -48,14 +46,18 @@ export class StatisticsService {
   }
 
   private async loadMap(query: StatisticsQueryDto): Promise<{
-    citizenship: string;
+    citizenship: string | null;
+    populationBasis: 'CITIZENSHIP' | 'NATIONAL';
+    programKey: string;
     purpose: VisaPurposeCode;
     year: number | null;
     countries: Array<{ iso3: string; statistic: Statistic }>;
     legendLabel: string;
   }> {
     const filters = await this.defaultFilters.resolve({
-      citizenship: query.citizenship,
+      ...(query.citizenship === undefined ? {} : { citizenship: query.citizenship }),
+      ...(query.populationBasis === undefined ? {} : { populationBasis: query.populationBasis }),
+      ...(query.programKey === undefined ? {} : { programKey: query.programKey }),
       purpose: query.purpose,
       metricType: query.metricType,
       ...(query.year === undefined ? {} : { year: query.year }),
@@ -82,6 +84,8 @@ export class StatisticsService {
 
     return {
       citizenship: filters.citizenship,
+      populationBasis: filters.populationBasis,
+      programKey: filters.programKey,
       purpose: filters.purpose,
       year: filters.year,
       countries: countries.map(({ iso3 }) => {
@@ -113,6 +117,12 @@ export class StatisticsService {
       return purpose === 'STUDY'
         ? 'Titulares brasileiros com permissão de estudo válida em 31 de dezembro; volume administrativo, não probabilidade'
         : 'Titulares brasileiros do IMP com permissão de trabalho válida em 31 de dezembro; valores arredondados pela fonte';
+    }
+    if (metricType === 'APPROVAL_RATE') {
+      return 'Taxa derivada entre decisões emitidas e recusadas; não representa chance individual';
+    }
+    if (metricType === 'REFUSAL_RATE') {
+      return 'Taxa derivada entre decisões recusadas e emitidas; não representa chance individual';
     }
     return purpose === 'STUDY'
       ? 'Primeiras autorizações de residência por educação; não representa vistos consulares'

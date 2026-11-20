@@ -1,4 +1,4 @@
-import { DataStatus } from '@prisma/client';
+import { DataStatus, PopulationBasis } from '@prisma/client';
 import { DefaultFiltersService } from '../../src/modules/statistics/services/default-filters.service.js';
 import { StatisticsService } from '../../src/modules/statistics/statistics.service.js';
 import { PrismaService } from '../../src/common/database/prisma.service.js';
@@ -41,6 +41,9 @@ describe('statistics integration', () => {
         data: {
           releaseId: 'test-release-2025',
           destinationIso3: 'ESP',
+          populationBasis: PopulationBasis.CITIZENSHIP,
+          populationKey: 'BRA',
+          programKey: 'ALL',
           citizenshipIso3: 'BRA',
           purposeCode: 'WORK',
           metricType: 'FIRST_RESIDENCE_PERMITS_GRANTED',

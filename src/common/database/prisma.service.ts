@@ -20,12 +20,20 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   constructor(@Optional() config?: ConfigService) {
     const source = config?.get<string>('DATABASE_URL') ?? process.env.DATABASE_URL;
     if (!source) throw new Error('DATABASE_URL is required');
+    const configuredNumber = (key: string, fallback: number): number => {
+      const fromConfig = config?.get<number>(key);
+      if (fromConfig !== undefined) return fromConfig;
+      const fromEnvironment = process.env[key];
+      if (fromEnvironment === undefined) return fallback;
+      const parsed = Number(fromEnvironment);
+      return Number.isFinite(parsed) ? parsed : fallback;
+    };
     super({
       datasourceUrl: databaseUrlWithSafetyLimits(
         source,
-        config?.get<number>('DATABASE_POOL_MAX', 5) ?? 5,
-        config?.get<number>('DATABASE_POOL_TIMEOUT_MS', 2_000) ?? 2_000,
-        config?.get<number>('DATABASE_STATEMENT_TIMEOUT_MS', 5_000) ?? 5_000,
+        configuredNumber('DATABASE_POOL_MAX', 5),
+        configuredNumber('DATABASE_POOL_TIMEOUT_MS', 2_000),
+        configuredNumber('DATABASE_STATEMENT_TIMEOUT_MS', 5_000),
       ),
     });
   }
