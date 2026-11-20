@@ -67,7 +67,16 @@ describe('public API contract: country detail and timeseries', () => {
       points: [{ year: 2025, statistic: { value: 42, unit: 'PER' } }],
     });
     expect(Object.keys(response.body).sort()).toEqual(
-      ['citizenship', 'comparisonGroupId', 'iso3', 'metricType', 'points', 'purpose'].sort(),
+      [
+        'citizenship',
+        'comparisonGroupId',
+        'iso3',
+        'metricType',
+        'points',
+        'populationBasis',
+        'programKey',
+        'purpose',
+      ].sort(),
     );
   });
 

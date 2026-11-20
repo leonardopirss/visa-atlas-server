@@ -130,6 +130,7 @@ describe('public API contract: defaults, countries and map', () => {
       unit: 'PER',
       dataAvailable: true,
       populationBasis: 'CITIZENSHIP',
+      populationKey: 'BRA',
       programKey: 'ALL',
     });
   });
@@ -172,6 +173,7 @@ describe('public API contract: defaults, countries and map', () => {
         'freshness',
         'metricType',
         'period',
+        'populationScope',
         'source',
         'unit',
         'value',
