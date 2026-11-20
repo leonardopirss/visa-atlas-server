@@ -1,5 +1,4 @@
 import { Injectable, Optional } from '@nestjs/common';
-import type { Prisma } from '@prisma/client';
 import { RedisCacheService } from '../../../common/cache/redis-cache.service.js';
 import type { TimeseriesQueryDto } from '../../../common/dto/statistics-query.dto.js';
 import { PrismaService } from '../../../common/database/prisma.service.js';
@@ -8,12 +7,8 @@ import {
   IncompatibleDimensionsError,
   ResourceNotFoundError,
 } from '../../../common/errors/domain.error.js';
-import { presentAggregateStatistic } from './statistic.presenter.js';
+import { OBSERVATION_INCLUDE, presentAggregateStatistic } from './statistic.presenter.js';
 import { PublishedReleaseVersionService } from './published-release-version.service.js';
-
-const OBSERVATION_INCLUDE = {
-  release: { include: { dataset: { include: { organization: true } } } },
-} satisfies Prisma.MetricObservationInclude;
 
 @Injectable()
 export class TimeseriesService {
@@ -53,9 +48,12 @@ export class TimeseriesService {
       throw new IncompatibleDimensionsError('fromYear must be less than or equal to toYear');
     }
 
+    const filters = this.resolvePopulation(query);
     const groups = await this.prisma.comparisonGroup.findMany({
       where: {
-        citizenshipIso3: query.citizenship,
+        populationBasis: filters.populationBasis,
+        populationKey: filters.populationKey,
+        programKey: filters.programKey,
         purposeCode: query.purpose,
         metricType: query.metricType,
         ...(query.comparisonGroupId ? { id: query.comparisonGroupId } : {}),
@@ -69,7 +67,9 @@ export class TimeseriesService {
     if (groups.length === 0) {
       return {
         iso3,
-        citizenship: query.citizenship,
+        citizenship: filters.citizenship,
+        populationBasis: filters.populationBasis,
+        programKey: filters.programKey,
         purpose: query.purpose,
         metricType: query.metricType,
         comparisonGroupId: query.comparisonGroupId ?? null,
@@ -109,7 +109,9 @@ export class TimeseriesService {
 
     return {
       iso3,
-      citizenship: query.citizenship,
+      citizenship: filters.citizenship,
+      populationBasis: filters.populationBasis,
+      programKey: filters.programKey,
       purpose: query.purpose,
       metricType: query.metricType,
       comparisonGroupId: query.comparisonGroupId ?? null,
@@ -120,5 +122,16 @@ export class TimeseriesService {
         ),
       })),
     };
+  }
+
+  private resolvePopulation(query: TimeseriesQueryDto) {
+    const populationBasis = query.populationBasis ?? 'CITIZENSHIP';
+    const citizenship = populationBasis === 'NATIONAL' ? null : (query.citizenship ?? 'BRA');
+    return {
+      populationBasis,
+      populationKey: citizenship ?? 'ALL',
+      programKey: query.programKey ?? 'ALL',
+      citizenship,
+    } as const;
   }
 }

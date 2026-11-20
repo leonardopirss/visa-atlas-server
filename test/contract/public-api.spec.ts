@@ -27,6 +27,65 @@ import {
   seedPublishedStudyFixture,
 } from '../helpers/database.js';
 
+type ContractSchema = {
+  $ref?: string;
+  enum?: unknown[];
+  items?: ContractSchema;
+  nullable?: boolean;
+  oneOf?: ContractSchema[];
+  properties?: Record<string, ContractSchema>;
+  required?: string[];
+  type?: unknown;
+};
+
+type ContractOperation = {
+  parameters?: Array<{ $ref?: string }>;
+};
+
+type ContractDocument = {
+  components?: {
+    parameters?: Record<string, unknown>;
+    schemas?: Record<string, ContractSchema>;
+  };
+  paths?: Record<string, { get?: ContractOperation }>;
+};
+
+const LEGACY_METRIC_TYPES = [
+  'FIRST_RESIDENCE_PERMITS_GRANTED',
+  'WORK_VISAS_ISSUED',
+  'APPLICATIONS_RECEIVED',
+  'APPLICATIONS_REFUSED',
+  'DECISIONS_GRANTED',
+  'VALID_PERMIT_HOLDERS',
+] as const;
+
+const VISA_INSIGHT_METRIC_TYPES = [
+  'DECISIONS_REFUSED',
+  'DECISIONS_WITHDRAWN',
+  'DECISIONS_LAPSED',
+  'APPROVAL_RATE',
+  'REFUSAL_RATE',
+  'PENDING_APPLICATIONS',
+] as const;
+
+async function loadContract(): Promise<ContractDocument> {
+  const source = await readFile('contracts/openapi.yaml', 'utf8');
+  return parse(source) as ContractDocument;
+}
+
+function schemaAllowsNull(schema: ContractSchema | undefined): boolean {
+  if (schema === undefined) return false;
+  if (schema.nullable === true || schema.type === 'null') return true;
+  if (Array.isArray(schema.type) && schema.type.includes('null')) return true;
+  return schema.oneOf?.some((candidate) => schemaAllowsNull(candidate)) ?? false;
+}
+
+function operationParameterRefs(document: ContractDocument, path: string): string[] {
+  return (document.paths?.[path]?.get?.parameters ?? [])
+    .map((parameter) => parameter.$ref)
+    .filter((reference): reference is string => reference !== undefined);
+}
+
 describe('public API contract: defaults, countries and map', () => {
   let app: INestApplication;
 
@@ -50,8 +109,7 @@ describe('public API contract: defaults, countries and map', () => {
   });
 
   it('loads the shared OpenAPI document and keeps exactly five operations', async () => {
-    const source = await readFile('contracts/openapi.yaml', 'utf8');
-    const document = parse(source) as { paths?: Record<string, unknown> };
+    const document = await loadContract();
     expect(Object.keys(document.paths ?? {})).toEqual([
       '/filters/defaults',
       '/countries',
@@ -71,6 +129,8 @@ describe('public API contract: defaults, countries and map', () => {
       comparisonGroupId: 'test-comparable-2025',
       unit: 'PER',
       dataAvailable: true,
+      populationBasis: 'CITIZENSHIP',
+      programKey: 'ALL',
     });
   });
 
@@ -95,7 +155,15 @@ describe('public API contract: defaults, countries and map', () => {
     expect(response.body.countries).toHaveLength(3);
     expect(response.body.legendLabel).toContain('não representa vistos consulares');
     expect(Object.keys(response.body).sort()).toEqual(
-      ['citizenship', 'countries', 'legendLabel', 'purpose', 'year'].sort(),
+      [
+        'citizenship',
+        'countries',
+        'legendLabel',
+        'populationBasis',
+        'programKey',
+        'purpose',
+        'year',
+      ].sort(),
     );
     expect(Object.keys(response.body.countries[0].statistic).sort()).toEqual(
       [
@@ -121,6 +189,49 @@ describe('public API contract: defaults, countries and map', () => {
       statistic: { value: number | null };
     }>;
     expect(countries.find((country) => country.statistic.value === 24)).toBeDefined();
+  });
+
+  it.each(VISA_INSIGHT_METRIC_TYPES)(
+    'accepts the visa insight metric type and returns typed absence: %s',
+    async (metricType) => {
+      const response = await request(app.getHttpServer())
+        .get(`/api/v1/filters/defaults?metricType=${metricType}`)
+        .expect(200);
+
+      expect(response.body).toMatchObject({
+        citizenship: 'BRA',
+        dataAvailable: false,
+        metricType,
+        populationBasis: 'CITIZENSHIP',
+        programKey: 'ALL',
+      });
+    },
+  );
+
+  it('requires an explicit national scope and never labels it as Brazilian', async () => {
+    const response = await request(app.getHttpServer())
+      .get(
+        '/api/v1/filters/defaults?populationBasis=NATIONAL&programKey=ircc:study-permit&metricType=PENDING_APPLICATIONS',
+      )
+      .expect(200);
+
+    expect(response.body).toMatchObject({
+      citizenship: null,
+      dataAvailable: false,
+      metricType: 'PENDING_APPLICATIONS',
+      populationBasis: 'NATIONAL',
+      programKey: 'ircc:study-permit',
+    });
+  });
+
+  it('rejects citizenship combined with an explicit national scope', async () => {
+    const response = await request(app.getHttpServer())
+      .get(
+        '/api/v1/filters/defaults?populationBasis=NATIONAL&citizenship=BRA&programKey=ircc:study-permit',
+      )
+      .expect(400);
+
+    expect(response.body.code).toBe('VALIDATION_ERROR');
   });
 
   it('rejects an unknown migration purpose', async () => {
@@ -174,6 +285,80 @@ describe('public API contract: defaults, countries and map', () => {
       .expect(400);
     expect(response.headers['x-correlation-id']).toMatch(/^[a-f0-9-]{36}$/);
     expect(response.body.correlationId).toBe(response.headers['x-correlation-id']);
+  });
+});
+
+describe('public OpenAPI contract: visa decision insights', () => {
+  it('adds the approved metric types without changing legacy metric names', async () => {
+    const document = await loadContract();
+    expect(document.components?.schemas?.MetricType?.enum).toEqual([
+      ...LEGACY_METRIC_TYPES,
+      ...VISA_INSIGHT_METRIC_TYPES,
+    ]);
+  });
+
+  it('adds population and program parameters to every statistics operation', async () => {
+    const document = await loadContract();
+    expect(document.components?.parameters).toHaveProperty('PopulationBasis');
+    expect(document.components?.parameters).toHaveProperty('ProgramKey');
+
+    for (const path of [
+      '/filters/defaults',
+      '/stats/map',
+      '/countries/{iso3}',
+      '/countries/{iso3}/timeseries',
+    ]) {
+      expect(operationParameterRefs(document, path)).toEqual(
+        expect.arrayContaining([
+          '#/components/parameters/PopulationBasis',
+          '#/components/parameters/ProgramKey',
+        ]),
+      );
+    }
+  });
+
+  it('returns resolved scope in envelopes and permits null citizenship only there', async () => {
+    const schemas = (await loadContract()).components?.schemas ?? {};
+
+    for (const schemaName of ['FilterDefaults', 'MapStatisticsResponse', 'TimeseriesResponse']) {
+      const schema = schemas[schemaName];
+      expect(schema?.required).toEqual(
+        expect.arrayContaining(['citizenship', 'populationBasis', 'programKey']),
+      );
+      expect(schema?.properties).toHaveProperty('citizenship');
+      expect(schema?.properties).toHaveProperty('populationBasis');
+      expect(schema?.properties).toHaveProperty('programKey');
+      expect(schemaAllowsNull(schema?.properties?.citizenship)).toBe(true);
+    }
+
+    expect(schemaAllowsNull(schemas.CountryDetail?.properties?.country)).toBe(false);
+    expect(schemaAllowsNull(schemas.Country?.properties?.iso3)).toBe(false);
+    expect(schemas.CitizenshipPopulationScope?.required).toContain('citizenshipIso3');
+    expect(schemas.NationalPopulationScope?.properties?.citizenshipIso3).toBeUndefined();
+  });
+
+  it('keeps visa insight metadata optional on Statistic for legacy payloads', async () => {
+    const statistic = (await loadContract()).components?.schemas?.Statistic;
+    expect(statistic?.properties).toHaveProperty('populationScope');
+    expect(statistic?.properties).toHaveProperty('derivation');
+    expect(statistic?.properties).toHaveProperty('measurement');
+    for (const optionalField of ['populationScope', 'derivation', 'measurement']) {
+      expect(statistic?.required).not.toContain(optionalField);
+    }
+  });
+
+  it('keeps requirements and pathways optional on VisaProgram', async () => {
+    const visaProgram = (await loadContract()).components?.schemas?.VisaProgram;
+    expect(visaProgram?.properties?.requirements).toMatchObject({
+      type: 'array',
+      items: { $ref: '#/components/schemas/VisaProgramRequirement' },
+    });
+    expect(visaProgram?.properties?.pathways).toMatchObject({
+      type: 'array',
+      items: { $ref: '#/components/schemas/VisaProgramPathway' },
+    });
+    expect(visaProgram?.required).not.toContain('requirements');
+    expect(visaProgram?.required).not.toContain('pathways');
   });
 });
 

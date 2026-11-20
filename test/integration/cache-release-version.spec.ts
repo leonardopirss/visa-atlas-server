@@ -1,6 +1,12 @@
 import type { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { DataStatus, MetricType, ReleaseStatus, VisaPurposeCode } from '@prisma/client';
+import {
+  DataStatus,
+  MetricType,
+  PopulationBasis,
+  ReleaseStatus,
+  VisaPurposeCode,
+} from '@prisma/client';
 import request from 'supertest';
 import { configureApplication } from '../../src/bootstrap.js';
 import { PublishReleaseService } from '../../src/modules/ingestion/services/publish-release.service.js';
@@ -51,6 +57,9 @@ describeCache('cache release version integration', () => {
         id: 'test-comparable-2026',
         datasetId: 'migr-resfirst',
         metricType: MetricType.FIRST_RESIDENCE_PERMITS_GRANTED,
+        populationBasis: PopulationBasis.CITIZENSHIP,
+        populationKey: 'BRA',
+        programKey: 'ALL',
         citizenshipIso3: 'BRA',
         purposeCode: VisaPurposeCode.WORK,
         period: '2026',
@@ -69,6 +78,9 @@ describeCache('cache release version integration', () => {
         observations: {
           create: {
             destinationIso3: 'ESP',
+            populationBasis: PopulationBasis.CITIZENSHIP,
+            populationKey: 'BRA',
+            programKey: 'ALL',
             citizenshipIso3: 'BRA',
             purposeCode: VisaPurposeCode.WORK,
             metricType: MetricType.FIRST_RESIDENCE_PERMITS_GRANTED,

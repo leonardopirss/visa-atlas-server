@@ -1,0 +1,251 @@
+openapi: 3.1.0
+info:
+  title: Visa Atlas — reviewed merge delta for feature 008
+  version: 0.2.0-draft
+  description: >-
+    Review artifact. T012 must merge these named schemas, parameters and property
+    additions into the canonical OpenAPI; this file is not a deployable API.
+paths: {}
+x-visa-atlas-merge:
+  parameters-to-add:
+    getFilterDefaults: [PopulationBasis, ProgramKey]
+    getMapStatistics: [PopulationBasis, ProgramKey]
+    getCountryDetail: [PopulationBasis, ProgramKey]
+    getCountryTimeseries: [PopulationBasis, ProgramKey]
+  schema-property-additions:
+    FilterDefaults:
+      populationBasis: { required: true, ref: '#/components/schemas/PopulationBasis' }
+      programKey: { required: true, type: string }
+    MapStatisticsResponse:
+      populationBasis: { required: true, ref: '#/components/schemas/PopulationBasis' }
+      programKey: { required: true, type: string }
+    TimeseriesResponse:
+      populationBasis: { required: true, ref: '#/components/schemas/PopulationBasis' }
+      programKey: { required: true, type: string }
+    Statistic:
+      populationScope: { required: false, ref: '#/components/schemas/PopulationScope' }
+      derivation: { required: false, ref: '#/components/schemas/MetricDerivation' }
+      measurement: { required: false, ref: '#/components/schemas/MeasurementMetadata' }
+    VisaProgram:
+      requirements: { required: false, type: array, items: { ref: '#/components/schemas/VisaProgramRequirement' } }
+      pathways: { required: false, type: array, items: { ref: '#/components/schemas/VisaProgramPathway' } }
+  existing-response-change:
+    citizenship: >-
+      Widen to nullable in filter defaults, map and timeseries responses. It is
+      null only for an explicit NATIONAL request; legacy requests remain string.
+  query-invariant: >-
+    citizenship defaults to BRA only when populationBasis is absent or
+    CITIZENSHIP. An explicit NATIONAL request must omit citizenship; providing
+    both is a 400 validation error. programKey defaults to ALL.
+  metric-type-values-to-add:
+    - DECISIONS_REFUSED
+    - DECISIONS_WITHDRAWN
+    - DECISIONS_LAPSED
+    - APPROVAL_RATE
+    - REFUSAL_RATE
+    - PENDING_APPLICATIONS
+components:
+  parameters:
+    PopulationBasis:
+      name: populationBasis
+      in: query
+      required: false
+      schema: { $ref: '#/components/schemas/PopulationBasis', default: CITIZENSHIP }
+      description: Defaults to CITIZENSHIP for backward compatibility.
+    ProgramKey:
+      name: programKey
+      in: query
+      required: false
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 160
+        pattern: '^(ALL|[a-z0-9]+(?:-[a-z0-9]+)*(?::[a-z0-9]+(?:-[a-z0-9]+)*)+)$'
+        default: ALL
+      description: Defaults to ALL; program-scoped data requires an explicit key.
+  schemas:
+    MetricType:
+      type: string
+      enum:
+        - FIRST_RESIDENCE_PERMITS_GRANTED
+        - WORK_VISAS_ISSUED
+        - APPLICATIONS_RECEIVED
+        - APPLICATIONS_REFUSED
+        - DECISIONS_GRANTED
+        - VALID_PERMIT_HOLDERS
+        - DECISIONS_REFUSED
+        - DECISIONS_WITHDRAWN
+        - DECISIONS_LAPSED
+        - APPROVAL_RATE
+        - REFUSAL_RATE
+        - PENDING_APPLICATIONS
+    SourceRef:
+      type: object
+      required: [organization, datasetCode, url]
+      properties:
+        organization: { type: string }
+        datasetCode: { type: string }
+        releaseId: { type: [string, 'null'] }
+        url: { type: string, pattern: '^https?://', maxLength: 2048 }
+        methodologyUrl: { type: [string, 'null'], pattern: '^https?://' }
+        fetchedAt: { type: [string, 'null'], format: date-time }
+        publishedAt: { type: [string, 'null'], format: date-time }
+    PopulationBasis:
+      type: string
+      enum: [CITIZENSHIP, NATIONAL]
+    PopulationScope:
+      oneOf:
+        - { $ref: '#/components/schemas/CitizenshipPopulationScope' }
+        - { $ref: '#/components/schemas/NationalPopulationScope' }
+    CitizenshipPopulationScope:
+      type: object
+      required: [basis, populationKey, citizenshipIso3, programKey, label]
+      properties:
+        basis: { type: string, enum: [CITIZENSHIP] }
+        populationKey: { type: string, pattern: '^[A-Z]{3}$' }
+        citizenshipIso3: { type: string, pattern: '^[A-Z]{3}$' }
+        programKey: { type: string, minLength: 1, maxLength: 160 }
+        label: { type: string, minLength: 1, maxLength: 200 }
+    NationalPopulationScope:
+      type: object
+      required: [basis, populationKey, programKey, label]
+      properties:
+        basis: { type: string, enum: [NATIONAL] }
+        populationKey: { type: string, enum: [ALL] }
+        programKey: { type: string, minLength: 1, maxLength: 160 }
+        label: { type: string, minLength: 1, maxLength: 200 }
+    DerivationFormula:
+      type: string
+      enum: [APPROVAL_RATE, REFUSAL_RATE]
+    MetricDerivation:
+      type: object
+      required: [formula, numerator, denominator, precision]
+      properties:
+        formula: { $ref: '#/components/schemas/DerivationFormula' }
+        numerator: { type: array, minItems: 1, items: { $ref: '#/components/schemas/DerivationOperand' } }
+        denominator: { type: array, minItems: 1, items: { $ref: '#/components/schemas/DerivationOperand' } }
+        precision: { type: integer, minimum: 2, maximum: 2 }
+    DerivationOperand:
+      type: object
+      required: [observationId, metricType, value, unit, period, releaseId, comparisonGroupId, sourceCategoryCode, coefficient]
+      properties:
+        observationId: { type: string, minLength: 1, maxLength: 200 }
+        metricType: { $ref: '#/components/schemas/MetricType' }
+        value: { type: integer, format: int64, minimum: 0 }
+        unit: { type: string, enum: [COUNT] }
+        period: { type: string, pattern: '^[0-9]{4}$' }
+        releaseId: { type: string, minLength: 1, maxLength: 200 }
+        comparisonGroupId: { type: string, minLength: 1, maxLength: 200 }
+        sourceCategoryCode: { type: string, minLength: 1, maxLength: 200 }
+        coefficient: { type: integer, minimum: 1, maximum: 1 }
+    MeasurementMetadata:
+      type: object
+      required: [approximate]
+      properties:
+        approximate: { type: boolean }
+        roundingIncrement: { type: integer, minimum: 1, nullable: true }
+        precision: { type: integer, minimum: 0, nullable: true }
+    RequirementType:
+      type: string
+      enum: [APPLICATION_FEE, PROOF_OF_FUNDS, DEPENDANTS_ALLOWED, SPOUSE_WORK_RIGHT, RENEWABLE, PROCESSING_TIME_TARGET]
+    RequirementState:
+      type: string
+      enum: [YES, NO, DEPENDS, UNKNOWN]
+    MoneyRequirementValue:
+      type: object
+      required: [kind, amount, currency, basis]
+      properties:
+        kind: { type: string, enum: [MONEY] }
+        amount: { type: string, pattern: '^[0-9]+(\.[0-9]+)?$' }
+        currency: { type: string, pattern: '^[A-Z]{3}$' }
+        basis: { type: string, enum: [PER_APPLICATION, PER_PERSON, PER_MONTH, PER_YEAR, TOTAL] }
+        maxPeriods: { type: integer, minimum: 1, nullable: true }
+    StateRequirementValue:
+      type: object
+      required: [kind, state]
+      properties:
+        kind: { type: string, enum: [STATE] }
+        state: { $ref: '#/components/schemas/RequirementState' }
+    DurationRequirementValue:
+      type: object
+      required: [kind, amount, unit]
+      properties:
+        kind: { type: string, enum: [DURATION] }
+        amount: { type: integer, minimum: 1 }
+        unit: { type: string, enum: [DAYS_CALENDAR, DAYS_BUSINESS, WEEKS, MONTHS, YEARS] }
+    RequirementCondition:
+      type: object
+      required: [kind, operator, value]
+      properties:
+        kind:
+          type: string
+          enum: [FAMILY_SIZE, GEOGRAPHIC_SCOPE, APPLICATION_LOCATION, APPLICATION_CONTEXT, PERSON_ROLE, DURATION_MONTHS, FUNDS_HOLDING_DAYS, PROGRAM_LEVEL, OCCUPATION_CLASS]
+        operator: { type: string, enum: [EQ, NOT_EQ, IN, GTE, LTE, GT] }
+        value:
+          oneOf:
+            - { type: string, maxLength: 160 }
+            - { type: integer }
+            - { type: array, items: { type: string, maxLength: 160 }, minItems: 1, maxItems: 50 }
+    RequirementSourceRef:
+      allOf:
+        - { $ref: '#/components/schemas/SourceRef' }
+        - type: object
+          required: [releaseId]
+          properties:
+            releaseId: { type: string, minLength: 1, maxLength: 200 }
+    VisaProgramRequirement:
+      oneOf:
+        - { $ref: '#/components/schemas/MoneyVisaProgramRequirement' }
+        - { $ref: '#/components/schemas/StateVisaProgramRequirement' }
+        - { $ref: '#/components/schemas/DurationVisaProgramRequirement' }
+    RequirementCommon:
+      type: object
+      required: [conditions, conditionSchemaVersion, effectiveAt, verifiedAt, officialUrl, source]
+      properties:
+        conditions: { type: array, maxItems: 30, items: { $ref: '#/components/schemas/RequirementCondition' } }
+        conditionSchemaVersion: { type: string, pattern: '^v[0-9]+$' }
+        conditionSummary: { type: string, nullable: true, maxLength: 500 }
+        effectiveAt: { type: string, format: date }
+        effectiveUntil: { type: string, format: date, nullable: true }
+        verifiedAt: { type: string, format: date-time }
+        officialUrl: { type: string, pattern: '^https?://', maxLength: 2048 }
+        source: { $ref: '#/components/schemas/RequirementSourceRef' }
+    MoneyVisaProgramRequirement:
+      allOf:
+        - { $ref: '#/components/schemas/RequirementCommon' }
+        - type: object
+          required: [type, value]
+          properties:
+            type: { type: string, enum: [APPLICATION_FEE, PROOF_OF_FUNDS] }
+            value: { $ref: '#/components/schemas/MoneyRequirementValue' }
+    StateVisaProgramRequirement:
+      allOf:
+        - { $ref: '#/components/schemas/RequirementCommon' }
+        - type: object
+          required: [type, value]
+          properties:
+            type: { type: string, enum: [DEPENDANTS_ALLOWED, SPOUSE_WORK_RIGHT, RENEWABLE] }
+            value: { $ref: '#/components/schemas/StateRequirementValue' }
+    DurationVisaProgramRequirement:
+      allOf:
+        - { $ref: '#/components/schemas/RequirementCommon' }
+        - type: object
+          required: [type, value]
+          properties:
+            type: { type: string, enum: [PROCESSING_TIME_TARGET] }
+            value: { $ref: '#/components/schemas/DurationRequirementValue' }
+    VisaProgramPathway:
+      type: object
+      required: [targetRouteCode, pathwayType, state, conditions, conditionSchemaVersion, effectiveAt, verifiedAt, officialUrl, source]
+      properties:
+        targetRouteCode: { type: string, minLength: 1, maxLength: 160 }
+        pathwayType: { type: string, enum: [POST_STUDY_WORK, PERMANENT_RESIDENCE] }
+        state: { type: string, enum: [YES, DEPENDS, UNKNOWN] }
+        qualifyingPeriodMonths: { type: integer, minimum: 0, nullable: true }
+        conditions: { type: array, maxItems: 30, items: { $ref: '#/components/schemas/RequirementCondition' } }
+        conditionSchemaVersion: { type: string, pattern: '^v[0-9]+$' }
+        effectiveAt: { type: string, format: date }
+        effectiveUntil: { type: string, format: date, nullable: true }
+        verifiedAt: { type: string, format: date-time }
+        officialUrl: { type: string, pattern: '^https?://', maxLength: 2048 }
+        source: { $ref: '#/components/schemas/RequirementSourceRef' }

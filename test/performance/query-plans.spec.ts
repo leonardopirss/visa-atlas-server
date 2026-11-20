@@ -1,4 +1,11 @@
-import { DataStatus, MetricType, Prisma, ReleaseStatus, VisaPurposeCode } from '@prisma/client';
+import {
+  DataStatus,
+  MetricType,
+  PopulationBasis,
+  Prisma,
+  ReleaseStatus,
+  VisaPurposeCode,
+} from '@prisma/client';
 import { PrismaService } from '../../src/common/database/prisma.service.js';
 import { CountryCatalogService } from '../../src/modules/countries/services/country-catalog.service.js';
 import { prisma, resetDatabase, seedPublishedFixture } from '../helpers/database.js';
@@ -33,6 +40,9 @@ describe('critical query plans', () => {
         id: 'uk-test-2025',
         datasetId: 'uk-home-office-occ-d02',
         metricType: MetricType.WORK_VISAS_ISSUED,
+        populationBasis: PopulationBasis.CITIZENSHIP,
+        populationKey: 'BRA',
+        programKey: 'ALL',
         citizenshipIso3: 'BRA',
         purposeCode: VisaPurposeCode.WORK,
         period: '2025',
@@ -50,6 +60,9 @@ describe('critical query plans', () => {
         observations: {
           create: {
             destinationIso3: 'GBR',
+            populationBasis: PopulationBasis.CITIZENSHIP,
+            populationKey: 'BRA',
+            programKey: 'ALL',
             citizenshipIso3: 'BRA',
             purposeCode: VisaPurposeCode.WORK,
             metricType: MetricType.WORK_VISAS_ISSUED,

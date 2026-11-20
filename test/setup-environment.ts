@@ -24,3 +24,6 @@ function deriveTestDatabaseUrl(): string {
 
 process.env.NODE_ENV = 'test';
 process.env.DATABASE_URL = deriveTestDatabaseUrl();
+process.env.DATABASE_POOL_MAX ??= '1';
+process.env.DATABASE_POOL_TIMEOUT_MS ??= '15000';
+process.env.DATABASE_STATEMENT_TIMEOUT_MS ??= '30000';

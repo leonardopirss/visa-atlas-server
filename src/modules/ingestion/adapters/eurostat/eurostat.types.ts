@@ -1,4 +1,9 @@
-import type { DataStatus, MetricType, VisaPurposeCode } from '@prisma/client';
+import type {
+  DataStatus,
+  MetricType,
+  PopulationBasis,
+  VisaPurposeCode,
+} from '@prisma/client';
 
 export interface EurostatDimensionCategory {
   index: Record<string, number> | string[];
@@ -30,7 +35,10 @@ export interface EurostatAdapterConfig {
 
 export interface StagedObservation {
   destinationIso3: string;
-  citizenshipIso3: string;
+  citizenshipIso3: string | null;
+  populationBasis?: PopulationBasis;
+  populationKey?: string;
+  programKey?: string;
   purpose: VisaPurposeCode;
   metricType: MetricType;
   sourceCategoryCode: string;

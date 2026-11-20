@@ -129,3 +129,87 @@ atômica de uma release de estudo nunca substitua a publicação de trabalho.
 
 Esses três indicadores não são somados ou ranqueados juntos: representam eventos,
 universos, unidades e metodologias diferentes.
+
+## Feature 008 — fontes avaliadas para indicadores de decisão
+
+> Status: pesquisa/admission gate. Nenhuma fonte desta seção está publicada pela
+> API até que contrato, migration, adapter, testes e release sejam aprovados.
+
+### MVP candidato — UK Home Office `Vis_D02`
+
+As [Immigration system statistics data tables](https://www.gov.uk/government/statistical-data-sets/immigration-system-statistics-data-tables)
+e o [guia metodológico](https://www.gov.uk/government/publications/user-guide-to-home-office-immigration-statistics--9/user-guide-to-immigration-statistics)
+identificam `Vis_D02` como outcomes de entry clearance por nacionalidade, tipo
+de visto e outcome. A fonte foi admitida condicionalmente para Brasil/Work e
+Brasil/Study porque issued e refused podem vir do mesmo dataset, release,
+população e período.
+
+A implementação deve ingerir issued, refused, withdrawn e lapsed como outcomes
+brutos distintos. As taxas do Visa Atlas serão derivadas somente como:
+
+```text
+issued / (issued + refused)
+refused / (issued + refused)
+```
+
+`Vis_D01` (applications) não pode ser denominador, pois application e outcome
+são contados em eventos/coortes diferentes. Withdrawn e lapsed permanecem
+auditáveis, mas fora do denominador inicial. Antes da ingestão, o adapter deve
+validar `Notes`, worksheet, cabeçalhos, Brazil, visa-type sets, anos completos,
+totais versus trimestres, revisões, SHA-256 e ausência de duplicação. Reuso sob
+[Open Government Licence v3.0](https://www.nationalarchives.gov.uk/information-management/re-using-public-sector-information/uk-government-licensing-framework/open-government-licence/)
+com atribuição ao Home Office.
+
+### Fontes rejeitadas para taxa de decisão
+
+- Recursos mensais de Operational Processing do IRCC permanecem rejeitados até
+  que inspeção estrutural prove outcomes equivalentes por finalidade, extensão,
+  população e período. Holders de permits não são decisões.
+- Eurostat `migr_resfirst`, `migr_resedu` e outras coleções de residence permits
+  medem autorizações concedidas/emitidas; não fornecem o universo harmonizado de
+  recusas e não podem gerar taxa de aprovação/refusa.
+
+## Feature 008 — processamento e inventário avaliados
+
+O [IRCC application processing system](https://www.canada.ca/en/immigration-refugees-citizenship/corporate/reports-statistics/statistics-open-data/immigration-stats/application-processing-system.html)
+foi admitido com ressalvas para snapshots de `PENDING_APPLICATIONS` de study/work
+permits em scope `PROGRAM`. A fonte exclui extensões, arredonda contagens e não
+oferece histórico estruturado identificado; cada captura deve preservar data,
+arredondamento, payload/fingerprint e link. Dados do Open Data usam a licença
+específica do recurso; páginas Canada.ca exigem revisão dos termos aplicáveis.
+
+O workbook trimestral de
+[Migration transparency data](https://www.gov.uk/government/statistical-data-sets/migration-transparency-data)
+foi admitido condicionalmente para WIP/outstanding por route. O adapter deve
+validar worksheet, definição de WIP, overseas/in-country, releases arquivadas e
+correções. Percentual dentro do service standard não é contagem pendente.
+
+[IRCC service standards](https://www.canada.ca/en/immigration-refugees-citizenship/corporate/mandate/service-declaration/service-standards.html)
+e [UKVI service standards](https://www.gov.uk/government/organisations/uk-visas-and-immigration/about/about-our-services)
+podem alimentar somente `PROCESSING_TIME_TARGET`, com dias úteis/corridos e
+scope explícitos. Calculadoras atuais, P80, projeções e expectativas não serão
+rotuladas como mediana/P90. Nenhuma fonte harmonizada adequada para
+`PROCESSING_TIME_MEDIAN` ou `PROCESSING_TIME_P90` foi admitida.
+
+## Feature 008 — requisitos de modalidades avaliados
+
+Requisitos só podem ser publicados após existir um `VisaProgram` pai verificado.
+Foram admitidos condicionalmente para modelagem: Canada Study, UK Student, UK
+Skilled Worker, Germany Study e Germany EU Blue Card. Fontes oficiais e decisões
+detalhadas ficam no `specs/008-visa-decision-insights/research.md`.
+
+- Taxas e fundos preservam moeda, base, pessoa/família, região, duração, data
+  efetiva e condição; não há câmbio implícito.
+- Dependentes, trabalho do cônjuge, renovação e residência usam `DEPENDS` quando
+  condicionados; não são reduzidos a sim/não.
+- Canada Work não recebe fundo nacional genérico. A UE não recebe taxa/fundo
+  único. Student/work permit não implica residência permanente automática.
+- Prazo fixo de settlement do UK Skilled Worker fica bloqueado até reconciliar
+  texto legal vigente e anúncio governamental com data efetiva.
+- Armazenar apenas fatos curtos e provenance; não copiar texto legal integral.
+
+GOV.UK segue OGL quando aplicável; Comissão Europeia e portais nacionais exigem
+verificação do aviso legal; páginas Canada.ca passam por revisão específica de
+reuso antes de publicação comercial. Toda fonte usa `fetchedAt`, `verifiedAt`,
+`effectiveAt`, URL oficial, fingerprint e histórico em vez de sobrescrever a
+regra anterior.

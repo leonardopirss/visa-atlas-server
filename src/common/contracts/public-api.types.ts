@@ -1,6 +1,12 @@
-import { DataStatus, MetricType, SponsorshipRequirement, VisaPurposeCode } from '@prisma/client';
+import {
+  DataStatus,
+  MetricType,
+  PopulationBasis,
+  SponsorshipRequirement,
+  VisaPurposeCode,
+} from '@prisma/client';
 
-export { DataStatus, MetricType, SponsorshipRequirement, VisaPurposeCode };
+export { DataStatus, MetricType, PopulationBasis, SponsorshipRequirement, VisaPurposeCode };
 
 export type Freshness = 'CURRENT' | 'STALE';
 
@@ -23,6 +29,49 @@ export interface Statistic {
   period: string;
   comparisonGroupId: string | null;
   source: SourceRef | null;
+  populationScope?: PopulationScope;
+  derivation?: MetricDerivation;
+  measurement?: MeasurementMetadata;
+}
+
+export type PopulationScope =
+  | {
+      basis: typeof PopulationBasis.CITIZENSHIP;
+      populationKey: string;
+      citizenshipIso3: string;
+      programKey: string;
+      label: string;
+    }
+  | {
+      basis: typeof PopulationBasis.NATIONAL;
+      populationKey: 'ALL';
+      programKey: string;
+      label: string;
+    };
+
+export interface DerivationOperand {
+  observationId: string;
+  metricType: MetricType;
+  value: number;
+  unit: 'COUNT';
+  period: string;
+  releaseId: string;
+  comparisonGroupId: string;
+  sourceCategoryCode: string;
+  coefficient: 1;
+}
+
+export interface MetricDerivation {
+  formula: 'APPROVAL_RATE' | 'REFUSAL_RATE';
+  numerator: DerivationOperand[];
+  denominator: DerivationOperand[];
+  precision: 2;
+}
+
+export interface MeasurementMetadata {
+  approximate: boolean;
+  roundingIncrement?: number | null;
+  precision?: number | null;
 }
 
 export interface CountryDto {

@@ -21,6 +21,70 @@ enum MetricType {
   APPLICATIONS_REFUSED
   DECISIONS_GRANTED
   VALID_PERMIT_HOLDERS
+  DECISIONS_REFUSED
+  DECISIONS_WITHDRAWN
+  DECISIONS_LAPSED
+  APPROVAL_RATE
+  REFUSAL_RATE
+  PENDING_APPLICATIONS
+}
+
+enum PopulationBasis {
+  CITIZENSHIP
+  NATIONAL
+}
+
+enum DerivationFormula {
+  APPROVAL_RATE
+  REFUSAL_RATE
+}
+
+enum DerivationOperandRole {
+  NUMERATOR_COMPONENT
+  DENOMINATOR_COMPONENT
+}
+
+enum RequirementType {
+  APPLICATION_FEE
+  PROOF_OF_FUNDS
+  DEPENDANTS_ALLOWED
+  SPOUSE_WORK_RIGHT
+  RENEWABLE
+  PROCESSING_TIME_TARGET
+}
+
+enum RequirementValueKind {
+  MONEY
+  STATE
+  DURATION
+}
+
+enum RequirementBasis {
+  PER_APPLICATION
+  PER_PERSON
+  PER_MONTH
+  PER_YEAR
+  TOTAL
+}
+
+enum RequirementState {
+  YES
+  NO
+  DEPENDS
+  UNKNOWN
+}
+
+enum RequirementDurationUnit {
+  DAYS_CALENDAR
+  DAYS_BUSINESS
+  WEEKS
+  MONTHS
+  YEARS
+}
+
+enum PathwayType {
+  POST_STUDY_WORK
+  PERMANENT_RESIDENCE
 }
 
 enum DataStatus {
@@ -108,17 +172,19 @@ model SourceDataset {
 }
 
 model DatasetRelease {
-  id                String              @id @default(cuid())
-  datasetId         String              @map("dataset_id")
-  sourcePublishedAt DateTime?           @map("source_published_at") @db.Timestamptz(3)
-  fetchedAt         DateTime            @map("fetched_at") @db.Timestamptz(3)
-  validatedAt       DateTime?           @map("validated_at") @db.Timestamptz(3)
-  publishedAt       DateTime?           @map("published_at") @db.Timestamptz(3)
+  id                String                   @id @default(cuid())
+  datasetId         String                   @map("dataset_id")
+  sourcePublishedAt DateTime?                @map("source_published_at") @db.Timestamptz(3)
+  fetchedAt         DateTime                 @map("fetched_at") @db.Timestamptz(3)
+  validatedAt       DateTime?                @map("validated_at") @db.Timestamptz(3)
+  publishedAt       DateTime?                @map("published_at") @db.Timestamptz(3)
   checksum          String
-  status            ReleaseStatus       @default(STAGING)
-  qualityReport     Json?               @map("quality_report")
-  dataset           SourceDataset       @relation(fields: [datasetId], references: [id])
+  status            ReleaseStatus            @default(STAGING)
+  qualityReport     Json?                    @map("quality_report")
+  dataset           SourceDataset            @relation(fields: [datasetId], references: [id])
   observations      MetricObservation[]
+  requirements      VisaProgramRequirement[]
+  pathways          VisaProgramPathway[]
 
   @@unique([datasetId, checksum])
   @@index([datasetId, status, publishedAt])
@@ -129,63 +195,157 @@ model ComparisonGroup {
   id                 String              @id
   datasetId          String              @map("dataset_id")
   metricType         MetricType          @map("metric_type")
-  citizenshipIso3    String              @map("citizenship_iso3") @db.Char(3)
+  populationBasis    PopulationBasis     @map("population_basis")
+  populationKey      String              @map("population_key")
+  programKey         String              @map("program_key")
+  citizenshipIso3    String?             @map("citizenship_iso3") @db.Char(3)
   purposeCode        VisaPurposeCode     @map("purpose")
   period             String
   unit               String
   methodologyVersion String              @map("methodology_version")
   dataset            SourceDataset       @relation(fields: [datasetId], references: [id])
-  citizenship        Citizenship         @relation(fields: [citizenshipIso3], references: [iso3])
+  citizenship        Citizenship?        @relation(fields: [citizenshipIso3], references: [iso3])
   purpose            VisaPurpose         @relation(fields: [purposeCode], references: [code])
   observations       MetricObservation[]
 
-  @@unique([datasetId, metricType, citizenshipIso3, purposeCode, period, unit, methodologyVersion])
-  @@index([citizenshipIso3, purposeCode, period, metricType])
+  @@unique([datasetId, metricType, populationBasis, populationKey, programKey, purposeCode, period, unit, methodologyVersion])
+  @@index([populationBasis, populationKey, programKey, purposeCode, period, metricType])
   @@map("comparison_groups")
 }
 
 model MetricObservation {
-  id                  String          @id @default(cuid())
-  releaseId           String          @map("release_id")
-  destinationIso3     String          @map("destination_iso3") @db.Char(3)
-  citizenshipIso3     String          @map("citizenship_iso3") @db.Char(3)
-  purposeCode         VisaPurposeCode @map("purpose")
-  metricType          MetricType      @map("metric_type")
-  sourceCategoryCode  String          @map("source_category_code")
-  sourceCategoryLabel String?         @map("source_category_label")
+  id                  String                    @id @default(cuid())
+  releaseId           String                    @map("release_id")
+  destinationIso3     String                    @map("destination_iso3") @db.Char(3)
+  populationBasis     PopulationBasis           @map("population_basis")
+  populationKey       String                    @map("population_key")
+  programKey          String                    @map("program_key")
+  citizenshipIso3     String?                   @map("citizenship_iso3") @db.Char(3)
+  purposeCode         VisaPurposeCode           @map("purpose")
+  metricType          MetricType                @map("metric_type")
+  sourceCategoryCode  String                    @map("source_category_code")
+  sourceCategoryLabel String?                   @map("source_category_label")
   period              String
   unit                String
   value               BigInt?
-  dataStatus          DataStatus      @map("data_status")
-  comparisonGroupId   String          @map("comparison_group_id")
-  release             DatasetRelease  @relation(fields: [releaseId], references: [id], onDelete: Cascade)
-  destination         Country         @relation(fields: [destinationIso3], references: [iso3])
-  citizenship         Citizenship     @relation(fields: [citizenshipIso3], references: [iso3])
-  purpose             VisaPurpose     @relation(fields: [purposeCode], references: [code])
-  comparisonGroup     ComparisonGroup @relation(fields: [comparisonGroupId], references: [id])
+  dataStatus          DataStatus                @map("data_status")
+  approximate         Boolean                   @default(false)
+  roundingIncrement   Int?                      @map("rounding_increment")
+  precision           Int?
+  comparisonGroupId   String                    @map("comparison_group_id")
+  release             DatasetRelease            @relation(fields: [releaseId], references: [id], onDelete: Cascade)
+  destination         Country                   @relation(fields: [destinationIso3], references: [iso3])
+  citizenship         Citizenship?              @relation(fields: [citizenshipIso3], references: [iso3])
+  purpose             VisaPurpose               @relation(fields: [purposeCode], references: [code])
+  comparisonGroup     ComparisonGroup           @relation(fields: [comparisonGroupId], references: [id])
+  derivationResult    MetricDerivation?         @relation("DerivedObservation")
+  derivationOperands  MetricDerivationOperand[] @relation("OperandObservation")
 
-  @@unique([releaseId, destinationIso3, citizenshipIso3, purposeCode, metricType, sourceCategoryCode, period, unit])
-  @@index([citizenshipIso3, purposeCode, period, metricType, comparisonGroupId])
+  @@unique([releaseId, destinationIso3, populationBasis, populationKey, programKey, purposeCode, metricType, sourceCategoryCode, period, unit])
+  @@index([populationBasis, populationKey, programKey, purposeCode, period, metricType, comparisonGroupId])
   @@index([comparisonGroupId, destinationIso3])
   @@index([destinationIso3, period])
   @@index([releaseId, sourceCategoryCode])
   @@map("metric_observations")
 }
 
+model MetricDerivation {
+  id            String                    @id @default(cuid())
+  observationId String                    @unique @map("observation_id")
+  formula       DerivationFormula
+  precision     Int
+  validatedAt   DateTime                  @map("validated_at") @db.Timestamptz(3)
+  qualityReport Json?                     @map("quality_report")
+  observation   MetricObservation         @relation("DerivedObservation", fields: [observationId], references: [id], onDelete: Cascade)
+  operands      MetricDerivationOperand[]
+
+  @@map("metric_derivations")
+}
+
+model MetricDerivationOperand {
+  id            String                @id @default(cuid())
+  derivationId  String                @map("derivation_id")
+  observationId String                @map("observation_id")
+  role          DerivationOperandRole
+  coefficient   Int                   @default(1)
+  derivation    MetricDerivation      @relation(fields: [derivationId], references: [id], onDelete: Cascade)
+  observation   MetricObservation     @relation("OperandObservation", fields: [observationId], references: [id], onDelete: Cascade)
+
+  @@unique([derivationId, observationId, role])
+  @@index([observationId])
+  @@map("metric_derivation_operands")
+}
+
 model VisaProgram {
-  id                     String                 @id @default(cuid())
-  destinationIso3        String                 @map("destination_iso3") @db.Char(3)
-  purposeCode            VisaPurposeCode        @map("purpose")
-  officialTitle          String                 @map("official_title")
+  id                     String                   @id @default(cuid())
+  destinationIso3        String                   @map("destination_iso3") @db.Char(3)
+  purposeCode            VisaPurposeCode          @map("purpose")
+  officialTitle          String                   @map("official_title")
   description            String?
-  sponsorshipRequirement SponsorshipRequirement @map("sponsorship_requirement")
-  verifiedAt             DateTime?              @map("verified_at") @db.Timestamptz(3)
-  officialUrl            String?                @map("official_url")
-  destination            Country                @relation(fields: [destinationIso3], references: [iso3])
-  purpose                VisaPurpose            @relation(fields: [purposeCode], references: [code])
+  sponsorshipRequirement SponsorshipRequirement   @map("sponsorship_requirement")
+  verifiedAt             DateTime?                @map("verified_at") @db.Timestamptz(3)
+  officialUrl            String?                  @map("official_url")
+  destination            Country                  @relation(fields: [destinationIso3], references: [iso3])
+  purpose                VisaPurpose              @relation(fields: [purposeCode], references: [code])
+  requirements           VisaProgramRequirement[]
+  pathways               VisaProgramPathway[]
 
   @@index([destinationIso3, purposeCode, verifiedAt])
   @@map("visa_programs")
+}
+
+model VisaProgramRequirement {
+  id                     String                   @id @default(cuid())
+  visaProgramId          String                   @map("visa_program_id")
+  releaseId              String                   @map("release_id")
+  type                   RequirementType
+  valueKind              RequirementValueKind     @map("value_kind")
+  amount                 Decimal?                 @db.Decimal(18, 2)
+  currency               String?                  @db.Char(3)
+  basis                  RequirementBasis?
+  maxPeriods             Int?                     @map("max_periods")
+  state                  RequirementState?
+  durationAmount         Int?                     @map("duration_amount")
+  durationUnit           RequirementDurationUnit? @map("duration_unit")
+  conditions             Json
+  conditionSchemaVersion String                   @map("condition_schema_version")
+  conditionKey           String                   @map("condition_key")
+  conditionSummary       String?                  @map("condition_summary")
+  effectiveAt            DateTime                 @map("effective_at") @db.Date
+  effectiveUntil         DateTime?                @map("effective_until") @db.Date
+  verifiedAt             DateTime                 @map("verified_at") @db.Timestamptz(3)
+  officialUrl            String                   @map("official_url")
+  sourceFingerprint      String                   @map("source_fingerprint")
+  visaProgram            VisaProgram              @relation(fields: [visaProgramId], references: [id], onDelete: Cascade)
+  release                DatasetRelease           @relation(fields: [releaseId], references: [id], onDelete: Cascade)
+
+  @@index([visaProgramId, type, effectiveAt])
+  @@index([releaseId])
+  @@map("visa_program_requirements")
+}
+
+model VisaProgramPathway {
+  id                     String           @id @default(cuid())
+  fromVisaProgramId      String           @map("from_visa_program_id")
+  releaseId              String           @map("release_id")
+  targetRouteCode        String           @map("target_route_code")
+  pathwayType            PathwayType      @map("pathway_type")
+  state                  RequirementState
+  qualifyingPeriodMonths Int?             @map("qualifying_period_months")
+  conditions             Json
+  conditionSchemaVersion String           @map("condition_schema_version")
+  conditionKey           String           @map("condition_key")
+  effectiveAt            DateTime         @map("effective_at") @db.Date
+  effectiveUntil         DateTime?        @map("effective_until") @db.Date
+  verifiedAt             DateTime         @map("verified_at") @db.Timestamptz(3)
+  officialUrl            String           @map("official_url")
+  sourceFingerprint      String           @map("source_fingerprint")
+  fromVisaProgram        VisaProgram      @relation(fields: [fromVisaProgramId], references: [id], onDelete: Cascade)
+  release                DatasetRelease   @relation(fields: [releaseId], references: [id], onDelete: Cascade)
+
+  @@index([fromVisaProgramId, pathwayType, effectiveAt])
+  @@index([releaseId])
+  @@map("visa_program_pathways")
 }
 
 model OfficialLink {
