@@ -35,7 +35,10 @@ export class VisaDecisionIngestionRunner {
     private readonly publisher: PublishReleaseService,
   ) {}
 
-  async run({ release, publish = true }: VisaDecisionRunInput): Promise<VisaDecisionIngestionResult> {
+  async run({
+    release,
+    publish = true,
+  }: VisaDecisionRunInput): Promise<VisaDecisionIngestionResult> {
     const observations = this.adapter.parse(this.reader.read(release.workbook));
     this.validator.validate(observations);
     await this.referenceData.synchronize();

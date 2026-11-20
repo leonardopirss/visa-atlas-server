@@ -14,10 +14,7 @@ import {
   type ValidationArguments,
   type ValidatorConstraintInterface,
 } from 'class-validator';
-import {
-  DEFAULT_METRIC_TYPE,
-  DEFAULT_PURPOSE,
-} from '../contracts/public-api.types.js';
+import { DEFAULT_METRIC_TYPE, DEFAULT_PURPOSE } from '../contracts/public-api.types.js';
 
 @ValidatorConstraint({ name: 'populationQueryCompatible', async: false })
 class PopulationQueryConstraint implements ValidatorConstraintInterface {
@@ -56,7 +53,6 @@ class PopulationQueryDto {
 }
 
 export class StatisticsQueryDto extends PopulationQueryDto {
-
   @IsOptional()
   @IsEnum(VisaPurposeCode)
   purpose: VisaPurposeCode = DEFAULT_PURPOSE;

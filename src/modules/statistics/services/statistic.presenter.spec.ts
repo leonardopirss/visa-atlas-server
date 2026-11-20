@@ -108,21 +108,9 @@ describe('statistic presenter: visa decision insights', () => {
   });
 
   it('serializes formula and auditable numerator/denominator operands', () => {
-    const grantedNumerator = operand(
-      MetricType.DECISIONS_GRANTED,
-      3n,
-      'NUMERATOR_COMPONENT',
-    );
-    const grantedDenominator = operand(
-      MetricType.DECISIONS_GRANTED,
-      3n,
-      'DENOMINATOR_COMPONENT',
-    );
-    const refusedDenominator = operand(
-      MetricType.DECISIONS_REFUSED,
-      1n,
-      'DENOMINATOR_COMPONENT',
-    );
+    const grantedNumerator = operand(MetricType.DECISIONS_GRANTED, 3n, 'NUMERATOR_COMPONENT');
+    const grantedDenominator = operand(MetricType.DECISIONS_GRANTED, 3n, 'DENOMINATOR_COMPONENT');
+    const refusedDenominator = operand(MetricType.DECISIONS_REFUSED, 1n, 'DENOMINATOR_COMPONENT');
 
     expect(
       presentStatistic(
@@ -168,11 +156,7 @@ describe('statistic presenter: visa decision insights', () => {
   });
 
   it('rejects malformed derivation operands instead of emitting unauditable metadata', () => {
-    const invalid = operand(
-      MetricType.DECISIONS_GRANTED,
-      3n,
-      'NUMERATOR_COMPONENT',
-    );
+    const invalid = operand(MetricType.DECISIONS_GRANTED, 3n, 'NUMERATOR_COMPONENT');
     expect(() =>
       presentStatistic(
         observation({

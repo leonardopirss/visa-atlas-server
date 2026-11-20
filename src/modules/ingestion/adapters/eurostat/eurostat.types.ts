@@ -1,9 +1,4 @@
-import type {
-  DataStatus,
-  MetricType,
-  PopulationBasis,
-  VisaPurposeCode,
-} from '@prisma/client';
+import type { DataStatus, MetricType, PopulationBasis, VisaPurposeCode } from '@prisma/client';
 
 export interface EurostatDimensionCategory {
   index: Record<string, number> | string[];

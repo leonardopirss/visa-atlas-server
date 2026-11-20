@@ -94,12 +94,7 @@ describe('MetricDerivationService', () => {
       service.deriveRate({
         formula: MetricType.APPROVAL_RATE,
         numerator: [skilledGranted, temporaryGranted],
-        denominator: [
-          skilledGranted,
-          skilledRefused,
-          temporaryGranted,
-          temporaryRefused,
-        ],
+        denominator: [skilledGranted, skilledRefused, temporaryGranted, temporaryRefused],
       }),
     ).toMatchObject({ value: 5_000n, unit: 'BASIS_POINTS' });
   });
